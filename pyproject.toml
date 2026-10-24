@@ -1,0 +1,7 @@
+[project]
+name = "bicycle-theft-prediction"
+version = "0.1.0"
+description = "Predict Bicycle Thefts in Fukuoka"
+readme = "README.md"
+requires-python = ">=3.15"
+dependencies = []
