@@ -21,6 +21,7 @@ class Meta(BaseModel):
     city_thefts: int = Field(description="Theft records inside Fukuoka city")
     mapped_thefts: int = Field(description="City records that could be assigned to a 町丁目")
     total_population: int
+    min_population_for_rate: int = Field(description="Areas with fewer residents get no per-capita rate")
     wards: list[Ward]
 
 

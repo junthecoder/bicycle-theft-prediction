@@ -33,6 +33,9 @@ importers:
       '@hey-api/openapi-ts':
         specifier: ^0.99.0
         version: 0.99.0(typescript@6.0.3)
+      '@types/geojson':
+        specifier: ^7946.0.16
+        version: 7946.0.16
       '@types/node':
         specifier: ^24.19.2
         version: 24.19.2

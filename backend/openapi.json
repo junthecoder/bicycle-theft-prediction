@@ -539,6 +539,11 @@
             "type": "integer",
             "title": "Total Population"
           },
+          "min_population_for_rate": {
+            "type": "integer",
+            "title": "Min Population For Rate",
+            "description": "Areas with fewer residents get no per-capita rate"
+          },
           "wards": {
             "items": {
               "$ref": "#/components/schemas/Ward"
@@ -555,6 +560,7 @@
           "city_thefts",
           "mapped_thefts",
           "total_population",
+          "min_population_for_rate",
           "wards"
         ],
         "title": "Meta"

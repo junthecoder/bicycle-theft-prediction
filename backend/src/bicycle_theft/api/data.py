@@ -136,6 +136,7 @@ class Dataset:
             city_thefts=len(self.thefts),
             mapped_thefts=int(self.thefts["key_code"].is_not_null().sum()),
             total_population=self.population_of(None),
+            min_population_for_rate=MIN_POPULATION_FOR_RATE,
             wards=[
                 schemas.Ward(code=code, name=name, population=int(pop), areas=int(n)) for code, name, pop, n in wards.rows()
             ],

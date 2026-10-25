@@ -197,6 +197,12 @@ export type Meta = {
      */
     total_population: number;
     /**
+     * Min Population For Rate
+     *
+     * Areas with fewer residents get no per-capita rate
+     */
+    min_population_for_rate: number;
+    /**
      * Wards
      */
     wards: Array<Ward>;
