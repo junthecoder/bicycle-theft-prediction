@@ -2,7 +2,7 @@
 
 import type { Client, ClientMeta, Options as Options2, RequestResult, TDataShape } from './client';
 import { client } from './client.gen';
-import type { GetAreaCountsData, GetAreaCountsErrors, GetAreaCountsResponses, GetAreasData, GetAreasResponses, GetMetaData, GetMetaResponses, GetSummaryData, GetSummaryErrors, GetSummaryResponses, GetTimelineData, GetTimelineErrors, GetTimelineResponses } from './types.gen';
+import type { GetAreaCountsData, GetAreaCountsErrors, GetAreaCountsResponses, GetAreasData, GetAreasResponses, GetCityOutlineData, GetCityOutlineResponses, GetMetaData, GetMetaResponses, GetSummaryData, GetSummaryErrors, GetSummaryResponses, GetTimelineData, GetTimelineErrors, GetTimelineResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -27,6 +27,11 @@ export const getMeta = <ThrowOnError extends boolean = false>(options?: Options<
  * Get Areas
  */
 export const getAreas = <ThrowOnError extends boolean = false>(options?: Options<GetAreasData, ThrowOnError>): RequestResult<GetAreasResponses, unknown, ThrowOnError> => (options?.client ?? client).get<GetAreasResponses, unknown, ThrowOnError>({ url: '/api/areas', ...options });
+
+/**
+ * Get City Outline
+ */
+export const getCityOutline = <ThrowOnError extends boolean = false>(options?: Options<GetCityOutlineData, ThrowOnError>): RequestResult<GetCityOutlineResponses, unknown, ThrowOnError> => (options?.client ?? client).get<GetCityOutlineResponses, unknown, ThrowOnError>({ url: '/api/city-outline', ...options });
 
 /**
  * Get Area Counts

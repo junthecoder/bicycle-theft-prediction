@@ -49,6 +49,21 @@ class AreaFeatureCollection(BaseModel):
     features: list[AreaFeature]
 
 
+class CityOutlineProperties(BaseModel):
+    name: str
+
+
+class CityOutlineFeature(BaseModel):
+    type: Literal["Feature"]
+    geometry: dict[str, Any] = Field(description="MultiPolygon of the whole city, 博多湾 included")
+    properties: CityOutlineProperties
+
+
+class CityOutlineFeatureCollection(BaseModel):
+    type: Literal["FeatureCollection"]
+    features: list[CityOutlineFeature]
+
+
 class Window(BaseModel):
     start: date
     end: date

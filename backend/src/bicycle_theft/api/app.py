@@ -13,7 +13,7 @@ from fastapi.routing import APIRoute
 
 from bicycle_theft.api import schemas
 from bicycle_theft.api.data import Dataset
-from bicycle_theft.areas import GEOJSON_PATH
+from bicycle_theft.areas import CITY_GEOJSON_PATH, GEOJSON_PATH
 from bicycle_theft.download_pmtiles import OUTPUT as PMTILES_PATH
 
 
@@ -64,6 +64,13 @@ def get_areas() -> FileResponse:
     if not GEOJSON_PATH.exists():
         raise HTTPException(404, f"{GEOJSON_PATH} missing; run `uv run build-areas`")
     return FileResponse(GEOJSON_PATH, media_type="application/geo+json")
+
+
+@app.get("/api/city-outline", response_model=schemas.CityOutlineFeatureCollection)
+def get_city_outline() -> FileResponse:
+    if not CITY_GEOJSON_PATH.exists():
+        raise HTTPException(404, f"{CITY_GEOJSON_PATH} missing; run `uv run build-areas`")
+    return FileResponse(CITY_GEOJSON_PATH, media_type="application/geo+json")
 
 
 @app.get("/api/thefts/by-area")

@@ -41,6 +41,24 @@
         }
       }
     },
+    "/api/city-outline": {
+      "get": {
+        "summary": "Get City Outline",
+        "operationId": "get_city_outline",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CityOutlineFeatureCollection"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/thefts/by-area": {
       "get": {
         "summary": "Get Area Counts",
@@ -492,6 +510,66 @@
           "count"
         ],
         "title": "CategoryCount"
+      },
+      "CityOutlineFeature": {
+        "properties": {
+          "type": {
+            "type": "string",
+            "const": "Feature",
+            "title": "Type"
+          },
+          "geometry": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Geometry",
+            "description": "MultiPolygon of the whole city, 博多湾 included"
+          },
+          "properties": {
+            "$ref": "#/components/schemas/CityOutlineProperties"
+          }
+        },
+        "type": "object",
+        "required": [
+          "type",
+          "geometry",
+          "properties"
+        ],
+        "title": "CityOutlineFeature"
+      },
+      "CityOutlineFeatureCollection": {
+        "properties": {
+          "type": {
+            "type": "string",
+            "const": "FeatureCollection",
+            "title": "Type"
+          },
+          "features": {
+            "items": {
+              "$ref": "#/components/schemas/CityOutlineFeature"
+            },
+            "type": "array",
+            "title": "Features"
+          }
+        },
+        "type": "object",
+        "required": [
+          "type",
+          "features"
+        ],
+        "title": "CityOutlineFeatureCollection"
+      },
+      "CityOutlineProperties": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "title": "CityOutlineProperties"
       },
       "HTTPValidationError": {
         "properties": {

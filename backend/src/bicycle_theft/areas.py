@@ -3,6 +3,8 @@
 Writes two files to data/processed/:
 - fukuoka_areas.geojson: one polygon per KEY_CODE with population, for the map.
 - fukuoka_areas.parquet: the same attributes without geometry, for joins in the API and notebooks.
+- fukuoka_city.geojson: the outline of the whole city, drawn on the map as the edge of the
+  recorded area.
 
 Also hosts `normalize_area_name`, which makes the 町丁目 names written by the police
 comparable with the census names.
@@ -21,6 +23,7 @@ from bicycle_theft.paths import PROCESSED_DIR, RAW_DIR
 BOUNDARY_DIR = RAW_DIR / "census" / "boundary"
 GEOJSON_PATH = PROCESSED_DIR / "fukuoka_areas.geojson"
 PARQUET_PATH = PROCESSED_DIR / "fukuoka_areas.parquet"
+CITY_GEOJSON_PATH = PROCESSED_DIR / "fukuoka_city.geojson"
 CRS = "EPSG:4326"
 # 8154 marks 水面調査区 (water bodies); nobody lives there and thefts are never geocoded to them.
 WATER_HCODE = 8154
@@ -55,14 +58,13 @@ def read_boundaries(boundary_dir: Path = BOUNDARY_DIR) -> gpd.GeoDataFrame:
     if not paths:
         raise FileNotFoundError(f"no shapefiles found under {boundary_dir}")
     frames = [gpd.read_file(path).to_crs(CRS) for path in paths]
-    gdf = gpd.GeoDataFrame(pd.concat(frames, ignore_index=True), crs=CRS)
-    return gdf[gdf["HCODE"] != WATER_HCODE]
+    return gpd.GeoDataFrame(pd.concat(frames, ignore_index=True), crs=CRS)
 
 
 def build_areas(gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
     # A few 大字 areas are stored as several rows sharing a KEY_CODE (detached parcels), so
     # merge them into one feature; population and households are per row and add up.
-    dissolved = gdf.dissolve(
+    dissolved = gdf[gdf["HCODE"] != WATER_HCODE].dissolve(
         by="KEY_CODE",
         aggfunc={"CITY_NAME": "first", "S_NAME": "first", "JINKO": "sum", "SETAI": "sum", "AREA": "sum"},
         as_index=False,
@@ -87,13 +89,26 @@ def build_areas(gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
     return areas.sort_values("key_code").reset_index(drop=True)
 
 
+def build_city_outline(gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
+    """One MultiPolygon for the whole city: the mainland with 博多湾, 玄界島 and 小呂島.
+
+    The water areas stay in this union. They fill the bay and the rivers, so the result has no
+    holes and the line follows the administrative boundary instead of every river bank."""
+    outline = gdf.geometry.union_all().simplify(SIMPLIFY_TOLERANCE, preserve_topology=True)
+    return gpd.GeoDataFrame({"name": ["福岡市"]}, geometry=[outline], crs=CRS)
+
+
 def main() -> None:
-    areas = build_areas(read_boundaries())
+    boundaries = read_boundaries()
+    areas = build_areas(boundaries)
+    city = build_city_outline(boundaries)
     PROCESSED_DIR.mkdir(parents=True, exist_ok=True)
     # Six decimals is about 10 cm, which keeps the GeoJSON small without visible loss.
-    areas.to_file(GEOJSON_PATH, driver="GeoJSON", COORDINATE_PRECISION=6, id_generate="NO")
+    geojson_options = {"driver": "GeoJSON", "COORDINATE_PRECISION": 6, "id_generate": "NO"}
+    areas.to_file(GEOJSON_PATH, **geojson_options)
+    city.to_file(CITY_GEOJSON_PATH, **geojson_options)
     pl.from_pandas(areas.drop(columns="geometry")).write_parquet(PARQUET_PATH)
-    print(f"wrote {len(areas)} areas to {GEOJSON_PATH} and {PARQUET_PATH}")
+    print(f"wrote {len(areas)} areas to {GEOJSON_PATH} and {PARQUET_PATH}, city outline to {CITY_GEOJSON_PATH}")
 
 
 if __name__ == "__main__":

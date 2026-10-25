@@ -149,6 +149,49 @@ export type CategoryCount = {
 };
 
 /**
+ * CityOutlineFeature
+ */
+export type CityOutlineFeature = {
+    /**
+     * Type
+     */
+    type: 'Feature';
+    /**
+     * Geometry
+     *
+     * MultiPolygon of the whole city, 博多湾 included
+     */
+    geometry: {
+        [key: string]: unknown;
+    };
+    properties: CityOutlineProperties;
+};
+
+/**
+ * CityOutlineFeatureCollection
+ */
+export type CityOutlineFeatureCollection = {
+    /**
+     * Type
+     */
+    type: 'FeatureCollection';
+    /**
+     * Features
+     */
+    features: Array<CityOutlineFeature>;
+};
+
+/**
+ * CityOutlineProperties
+ */
+export type CityOutlineProperties = {
+    /**
+     * Name
+     */
+    name: string;
+};
+
+/**
  * HTTPValidationError
  */
 export type HttpValidationError = {
@@ -442,6 +485,22 @@ export type GetAreasResponses = {
 };
 
 export type GetAreasResponse = GetAreasResponses[keyof GetAreasResponses];
+
+export type GetCityOutlineData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/city-outline';
+};
+
+export type GetCityOutlineResponses = {
+    /**
+     * Successful Response
+     */
+    200: CityOutlineFeatureCollection;
+};
+
+export type GetCityOutlineResponse = GetCityOutlineResponses[keyof GetCityOutlineResponses];
 
 export type GetAreaCountsData = {
     body?: never;
