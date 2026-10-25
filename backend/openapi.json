@@ -82,7 +82,6 @@
             "required": false,
             "schema": {
               "type": "integer",
-              "maximum": 366,
               "minimum": 1,
               "description": "Window length in days, ending on `end`",
               "default": 90,
@@ -164,7 +163,6 @@
             "required": false,
             "schema": {
               "type": "integer",
-              "maximum": 366,
               "minimum": 1,
               "description": "Window length in days, ending on `end`",
               "default": 90,

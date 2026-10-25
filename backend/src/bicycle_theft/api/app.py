@@ -36,7 +36,8 @@ app = FastAPI(
 )
 
 EndDate = Annotated[date, Query(description="Last day of the window (inclusive)")]
-Days = Annotated[int, Query(ge=1, le=366, description="Window length in days, ending on `end`")]
+# No upper bound: the frontend's 全期間 option asks for everything since the first date.
+Days = Annotated[int, Query(ge=1, description="Window length in days, ending on `end`")]
 HourFrom = Annotated[int, Query(ge=0, le=23)]
 HourTo = Annotated[int, Query(ge=0, le=23, description="Inclusive; smaller than hour_from wraps past midnight")]
 KeyCode = Annotated[str | None, Query(description="町丁目 KEY_CODE; omit for the whole city")]
