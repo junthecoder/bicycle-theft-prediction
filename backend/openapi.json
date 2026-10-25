@@ -1,0 +1,862 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Fukuoka Bicycle Theft API",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/api/meta": {
+      "get": {
+        "summary": "Get Meta",
+        "operationId": "get_meta",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Meta"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/areas": {
+      "get": {
+        "summary": "Get Areas",
+        "operationId": "get_areas",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AreaFeatureCollection"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/thefts/by-area": {
+      "get": {
+        "summary": "Get Area Counts",
+        "operationId": "get_area_counts",
+        "parameters": [
+          {
+            "name": "end",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "description": "Last day of the window (inclusive)",
+              "title": "End"
+            },
+            "description": "Last day of the window (inclusive)"
+          },
+          {
+            "name": "days",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 366,
+              "minimum": 1,
+              "description": "Window length in days, ending on `end`",
+              "default": 90,
+              "title": "Days"
+            },
+            "description": "Window length in days, ending on `end`"
+          },
+          {
+            "name": "hour_from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 23,
+              "minimum": 0,
+              "default": 0,
+              "title": "Hour From"
+            }
+          },
+          {
+            "name": "hour_to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 23,
+              "minimum": 0,
+              "description": "Inclusive; smaller than hour_from wraps past midnight",
+              "default": 23,
+              "title": "Hour To"
+            },
+            "description": "Inclusive; smaller than hour_from wraps past midnight"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AreaCounts"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/thefts/summary": {
+      "get": {
+        "summary": "Get Summary",
+        "operationId": "get_summary",
+        "parameters": [
+          {
+            "name": "end",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "description": "Last day of the window (inclusive)",
+              "title": "End"
+            },
+            "description": "Last day of the window (inclusive)"
+          },
+          {
+            "name": "days",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 366,
+              "minimum": 1,
+              "description": "Window length in days, ending on `end`",
+              "default": 90,
+              "title": "Days"
+            },
+            "description": "Window length in days, ending on `end`"
+          },
+          {
+            "name": "hour_from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 23,
+              "minimum": 0,
+              "default": 0,
+              "title": "Hour From"
+            }
+          },
+          {
+            "name": "hour_to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 23,
+              "minimum": 0,
+              "description": "Inclusive; smaller than hour_from wraps past midnight",
+              "default": 23,
+              "title": "Hour To"
+            },
+            "description": "Inclusive; smaller than hour_from wraps past midnight"
+          },
+          {
+            "name": "key_code",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "町丁目 KEY_CODE; omit for the whole city",
+              "title": "Key Code"
+            },
+            "description": "町丁目 KEY_CODE; omit for the whole city"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Summary"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/thefts/timeline": {
+      "get": {
+        "summary": "Get Timeline",
+        "operationId": "get_timeline",
+        "parameters": [
+          {
+            "name": "hour_from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 23,
+              "minimum": 0,
+              "default": 0,
+              "title": "Hour From"
+            }
+          },
+          {
+            "name": "hour_to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 23,
+              "minimum": 0,
+              "description": "Inclusive; smaller than hour_from wraps past midnight",
+              "default": 23,
+              "title": "Hour To"
+            },
+            "description": "Inclusive; smaller than hour_from wraps past midnight"
+          },
+          {
+            "name": "key_code",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "町丁目 KEY_CODE; omit for the whole city",
+              "title": "Key Code"
+            },
+            "description": "町丁目 KEY_CODE; omit for the whole city"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Timeline"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AreaCount": {
+        "properties": {
+          "key_code": {
+            "type": "string",
+            "title": "Key Code"
+          },
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          },
+          "prev_count": {
+            "type": "integer",
+            "title": "Prev Count",
+            "description": "Count in the window of the same length immediately before"
+          },
+          "rate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rate",
+            "description": "Thefts per 1,000 residents; null where too few people live"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key_code",
+          "count",
+          "prev_count",
+          "rate"
+        ],
+        "title": "AreaCount"
+      },
+      "AreaCounts": {
+        "properties": {
+          "window": {
+            "$ref": "#/components/schemas/Window"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total",
+            "description": "City-wide thefts in the window"
+          },
+          "unmapped": {
+            "type": "integer",
+            "title": "Unmapped",
+            "description": "Thefts in the window that could not be placed in a 町丁目"
+          },
+          "areas": {
+            "items": {
+              "$ref": "#/components/schemas/AreaCount"
+            },
+            "type": "array",
+            "title": "Areas",
+            "description": "Only areas with at least one theft in either window"
+          }
+        },
+        "type": "object",
+        "required": [
+          "window",
+          "total",
+          "unmapped",
+          "areas"
+        ],
+        "title": "AreaCounts"
+      },
+      "AreaFeature": {
+        "properties": {
+          "type": {
+            "type": "string",
+            "const": "Feature",
+            "title": "Type"
+          },
+          "geometry": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Geometry"
+          },
+          "properties": {
+            "$ref": "#/components/schemas/AreaProperties"
+          }
+        },
+        "type": "object",
+        "required": [
+          "type",
+          "geometry",
+          "properties"
+        ],
+        "title": "AreaFeature"
+      },
+      "AreaFeatureCollection": {
+        "properties": {
+          "type": {
+            "type": "string",
+            "const": "FeatureCollection",
+            "title": "Type"
+          },
+          "features": {
+            "items": {
+              "$ref": "#/components/schemas/AreaFeature"
+            },
+            "type": "array",
+            "title": "Features"
+          }
+        },
+        "type": "object",
+        "required": [
+          "type",
+          "features"
+        ],
+        "title": "AreaFeatureCollection"
+      },
+      "AreaProperties": {
+        "properties": {
+          "key_code": {
+            "type": "string",
+            "title": "Key Code",
+            "description": "11-digit census KEY_CODE; also the GeoJSON feature id"
+          },
+          "ward_code": {
+            "type": "string",
+            "title": "Ward Code"
+          },
+          "ward": {
+            "type": "string",
+            "title": "Ward"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "name_normalized": {
+            "type": "string",
+            "title": "Name Normalized"
+          },
+          "population": {
+            "type": "integer",
+            "title": "Population"
+          },
+          "households": {
+            "type": "integer",
+            "title": "Households"
+          },
+          "area_km2": {
+            "type": "number",
+            "title": "Area Km2"
+          },
+          "lon": {
+            "type": "number",
+            "title": "Lon"
+          },
+          "lat": {
+            "type": "number",
+            "title": "Lat"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key_code",
+          "ward_code",
+          "ward",
+          "name",
+          "name_normalized",
+          "population",
+          "households",
+          "area_km2",
+          "lon",
+          "lat"
+        ],
+        "title": "AreaProperties"
+      },
+      "CategoryCount": {
+        "properties": {
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "label",
+          "count"
+        ],
+        "title": "CategoryCount"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "Meta": {
+        "properties": {
+          "date_min": {
+            "type": "string",
+            "format": "date",
+            "title": "Date Min",
+            "description": "First date the time slider should offer"
+          },
+          "date_max": {
+            "type": "string",
+            "format": "date",
+            "title": "Date Max",
+            "description": "Last date with theft records"
+          },
+          "population_year": {
+            "type": "integer",
+            "title": "Population Year",
+            "description": "Census year the population figures come from"
+          },
+          "city_thefts": {
+            "type": "integer",
+            "title": "City Thefts",
+            "description": "Theft records inside Fukuoka city"
+          },
+          "mapped_thefts": {
+            "type": "integer",
+            "title": "Mapped Thefts",
+            "description": "City records that could be assigned to a 町丁目"
+          },
+          "total_population": {
+            "type": "integer",
+            "title": "Total Population"
+          },
+          "wards": {
+            "items": {
+              "$ref": "#/components/schemas/Ward"
+            },
+            "type": "array",
+            "title": "Wards"
+          }
+        },
+        "type": "object",
+        "required": [
+          "date_min",
+          "date_max",
+          "population_year",
+          "city_thefts",
+          "mapped_thefts",
+          "total_population",
+          "wards"
+        ],
+        "title": "Meta"
+      },
+      "Summary": {
+        "properties": {
+          "window": {
+            "$ref": "#/components/schemas/Window"
+          },
+          "key_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Key Code",
+            "description": "null for the city-wide summary"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "ward": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ward"
+          },
+          "population": {
+            "type": "integer",
+            "title": "Population"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "prev_total": {
+            "type": "integer",
+            "title": "Prev Total"
+          },
+          "rate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rate",
+            "description": "Thefts per 1,000 residents over the window"
+          },
+          "by_hour": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "By Hour",
+            "description": "24 counts indexed by hour of day"
+          },
+          "unknown_hour": {
+            "type": "integer",
+            "title": "Unknown Hour"
+          },
+          "by_weekday": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "By Weekday",
+            "description": "7 counts, Monday first"
+          },
+          "locked": {
+            "type": "integer",
+            "title": "Locked"
+          },
+          "unlocked": {
+            "type": "integer",
+            "title": "Unlocked"
+          },
+          "by_place": {
+            "items": {
+              "$ref": "#/components/schemas/CategoryCount"
+            },
+            "type": "array",
+            "title": "By Place"
+          },
+          "bicycle_parking": {
+            "type": "integer",
+            "title": "Bicycle Parking",
+            "description": "Thefts from 駐車（輪）場 as opposed to anywhere else"
+          },
+          "by_age": {
+            "items": {
+              "$ref": "#/components/schemas/CategoryCount"
+            },
+            "type": "array",
+            "title": "By Age"
+          },
+          "top_koban": {
+            "items": {
+              "$ref": "#/components/schemas/CategoryCount"
+            },
+            "type": "array",
+            "title": "Top Koban",
+            "description": "管轄交番・駐在所 with the most thefts"
+          }
+        },
+        "type": "object",
+        "required": [
+          "window",
+          "key_code",
+          "name",
+          "ward",
+          "population",
+          "total",
+          "prev_total",
+          "rate",
+          "by_hour",
+          "unknown_hour",
+          "by_weekday",
+          "locked",
+          "unlocked",
+          "by_place",
+          "bicycle_parking",
+          "by_age",
+          "top_koban"
+        ],
+        "title": "Summary"
+      },
+      "Timeline": {
+        "properties": {
+          "hour_from": {
+            "type": "integer",
+            "title": "Hour From"
+          },
+          "hour_to": {
+            "type": "integer",
+            "title": "Hour To"
+          },
+          "key_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Key Code"
+          },
+          "points": {
+            "items": {
+              "$ref": "#/components/schemas/TimelinePoint"
+            },
+            "type": "array",
+            "title": "Points"
+          }
+        },
+        "type": "object",
+        "required": [
+          "hour_from",
+          "hour_to",
+          "key_code",
+          "points"
+        ],
+        "title": "Timeline"
+      },
+      "TimelinePoint": {
+        "properties": {
+          "month": {
+            "type": "string",
+            "format": "date",
+            "title": "Month",
+            "description": "First day of the month"
+          },
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "month",
+          "count"
+        ],
+        "title": "TimelinePoint"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      },
+      "Ward": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "title": "Code",
+            "description": "5-digit municipality code, e.g. 40131 for 東区"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "population": {
+            "type": "integer",
+            "title": "Population"
+          },
+          "areas": {
+            "type": "integer",
+            "title": "Areas",
+            "description": "Number of 町丁目 in the ward"
+          }
+        },
+        "type": "object",
+        "required": [
+          "code",
+          "name",
+          "population",
+          "areas"
+        ],
+        "title": "Ward"
+      },
+      "Window": {
+        "properties": {
+          "start": {
+            "type": "string",
+            "format": "date",
+            "title": "Start"
+          },
+          "end": {
+            "type": "string",
+            "format": "date",
+            "title": "End"
+          },
+          "days": {
+            "type": "integer",
+            "title": "Days"
+          },
+          "hour_from": {
+            "type": "integer",
+            "title": "Hour From"
+          },
+          "hour_to": {
+            "type": "integer",
+            "title": "Hour To",
+            "description": "Inclusive; when smaller than hour_from the range wraps past midnight"
+          }
+        },
+        "type": "object",
+        "required": [
+          "start",
+          "end",
+          "days",
+          "hour_from",
+          "hour_to"
+        ],
+        "title": "Window"
+      }
+    }
+  }
+}

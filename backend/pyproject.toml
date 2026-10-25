@@ -26,6 +26,8 @@ pipeline = "bicycle_theft.pipeline:main"
 census-bbox = "bicycle_theft.census_bbox:main"
 download-pmtiles = "bicycle_theft.download_pmtiles:main"
 build-areas = "bicycle_theft.areas:main"
+api = "bicycle_theft.api.app:main"
+export-openapi = "bicycle_theft.api.export_openapi:main"
 
 [build-system]
 requires = ["uv_build>=0.13.5,<0.14"]
