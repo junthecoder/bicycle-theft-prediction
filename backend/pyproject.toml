@@ -2,7 +2,6 @@
 name = "bicycle-theft-prediction"
 version = "0.1.0"
 description = "Predict Bicycle Thefts in Fukuoka"
-readme = "README.md"
 requires-python = ">=3.15"
 dependencies = [
     "numpy>=2.5.4",
@@ -20,3 +19,15 @@ dependencies = [
 dev = [
     "ipython>=9.17.1",
 ]
+
+[project.scripts]
+pipeline = "bicycle_theft.pipeline:main"
+census-bbox = "bicycle_theft.census_bbox:main"
+download-pmtiles = "bicycle_theft.download_pmtiles:main"
+
+[build-system]
+requires = ["uv_build>=0.13.5,<0.14"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-name = "bicycle_theft"

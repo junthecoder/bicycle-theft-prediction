@@ -2,12 +2,11 @@
 
 import json
 import subprocess
-from pathlib import Path
 from urllib.request import urlopen
 
-from census_bbox import census_bbox
+from bicycle_theft.census_bbox import census_bbox
+from bicycle_theft.paths import RAW_DIR
 
-RAW_DIR = Path(__file__).parent / "data" / "raw"
 OUTPUT = RAW_DIR / "fukuoka.pmtiles"
 BUILDS_URL = "https://build-metadata.protomaps.dev/builds.json"
 BUILD_URL = "https://build.protomaps.com/{key}"

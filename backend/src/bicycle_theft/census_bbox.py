@@ -5,7 +5,9 @@ from pathlib import Path
 import geopandas as gpd
 import pandas as pd
 
-BOUNDARY_DIR = Path(__file__).parent / "data" / "raw" / "census" / "boundary"
+from bicycle_theft.paths import RAW_DIR
+
+BOUNDARY_DIR = RAW_DIR / "census" / "boundary"
 CRS = "EPSG:4326"
 
 

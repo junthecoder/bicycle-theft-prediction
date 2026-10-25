@@ -1,5 +1,11 @@
 # Fukuoka Bicycle Thefts Prediction
 
+## Layout
+
+- `backend/`: Python (uv) data pipeline and model. Run commands from here, e.g. `uv run pipeline`.
+- `frontend/`: React + TypeScript (pnpm, Vite). Run `pnpm dev` from here.
+- `data/`: raw and processed data, shared by both (not tracked).
+
 ## Dataset
 
 ### Boundary data
@@ -27,4 +33,4 @@ https://www.e-stat.go.jp/gis/statmap-search/data?statsId=T001082&code=40&downloa
 
 ### PMTiles
 
-Run `download_pmtiles.py` to download PMTiles for Fukuoka city.
+Run `uv run download-pmtiles` in `backend/` to download PMTiles for Fukuoka city.

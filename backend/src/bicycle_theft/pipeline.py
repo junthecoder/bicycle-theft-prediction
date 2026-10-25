@@ -9,9 +9,8 @@ import dlt
 import polars as pl
 from dlt.common.typing import TDataItems
 
-DATA_DIR = Path(__file__).parent / "data"
-RAW_DIR = DATA_DIR / "raw"
-PROCESSED_DIR = DATA_DIR / "processed"
+from bicycle_theft.paths import PROCESSED_DIR, RAW_DIR
+
 TABLE_NAME = "fukuoka_bicycle_thefts"
 DATE_COLUMN = "発生年月日（始期）"
 HOUR_COLUMN = "発生時（始期）"
