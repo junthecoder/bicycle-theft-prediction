@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import type { AreaProperties, Summary } from '../client'
 import { colorFor } from '../lib/color'
 import { addDays, WEEKDAY_LABELS } from '../lib/date'
-import { isHourSelected, METRIC_LABELS, type Metric, type Period } from '../lib/period'
+import { isHourSelected, METRIC_LABELS, type Metric, type Period, windowDays, windowStart } from '../lib/period'
 import type { AreaValue } from '../Map'
 import { Bars, CategoryList, Donut } from './Charts'
 
@@ -245,7 +245,10 @@ function RankingTab({
   domainMax,
   selectedKey,
   onSelectArea,
-}: Pick<Props, 'areas' | 'values' | 'metric' | 'domainMax' | 'selectedKey' | 'onSelectArea'>) {
+  dateMin,
+  period,
+}: Pick<Props, 'areas' | 'values' | 'metric' | 'domainMax' | 'selectedKey' | 'onSelectArea' | 'dateMin' | 'period'>) {
+  const comparable = addDays(windowStart(period, dateMin), -windowDays(period, dateMin)) >= dateMin
   const byKey = useMemo(() => new Map(areas.map((a) => [a.key_code, a])), [areas])
   const rows = useMemo(() => {
     const list = [...values.entries()]
@@ -295,7 +298,7 @@ function RankingTab({
                   {metric === 'rate' && <span style={{ color: 'var(--muted)' }}> ({row.value.count}件)</span>}
                 </td>
                 <td className="num">
-                  <Delta current={row.value.count} previous={row.value.prevCount} />
+                  {comparable ? <Delta current={row.value.count} previous={row.value.prevCount} /> : '—'}
                 </td>
               </tr>
             )
