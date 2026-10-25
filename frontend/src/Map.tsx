@@ -178,11 +178,11 @@ function MapView({
 
   useEffect(() => {
     const map = mapRef.current?.getMap()
-    if (!map || !focus || !areas) return
+    if (!map || !sourceReady || !focus || !areas) return
     const feature = areas.features.find((f) => f.properties.key_code === focus.keyCode)
     if (!feature) return
     map.fitBounds(geometryBounds(feature.geometry as unknown as Geometry), focusOptions(insets))
-  }, [focus, areas])
+  }, [focus, areas, insets, sourceReady])
 
   const setHovered = (keyCode: string | null) => {
     const map = mapRef.current?.getMap()
