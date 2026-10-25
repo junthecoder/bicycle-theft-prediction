@@ -571,6 +571,71 @@
   font-variant-numeric: tabular-nums;
 }
 
+.donut {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.donut svg {
+  flex: none;
+  width: 112px;
+  height: 112px;
+}
+
+.donut-total {
+  font-size: 15px;
+  font-weight: 700;
+  fill: var(--text);
+}
+
+.donut-total.long {
+  font-size: 12px;
+}
+
+.donut-total .unit {
+  font-size: 10px;
+  font-weight: 400;
+  fill: var(--muted);
+}
+
+.donut-legend {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 3px;
+  font-size: 12px;
+}
+
+.donut-legend li {
+  display: grid;
+  grid-template-columns: 10px minmax(0, 1fr) auto;
+  gap: 6px;
+  align-items: start;
+  line-height: 1.3;
+}
+
+.donut-legend .dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-top: 3px;
+}
+
+/* Long place names (その他の住宅（３階建て以下共同住宅等）) wrap rather than truncate. */
+.donut-legend .label {
+  overflow-wrap: anywhere;
+}
+
+.donut-legend .count {
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
 .insights {
   margin: 0;
   padding-left: 18px;

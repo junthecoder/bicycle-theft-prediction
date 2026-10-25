@@ -4,7 +4,7 @@ import { colorFor } from '../lib/color'
 import { addDays, WEEKDAY_LABELS } from '../lib/date'
 import { isHourSelected, METRIC_LABELS, type Metric, type Period } from '../lib/period'
 import type { AreaValue } from '../Map'
-import { Bars, CategoryList } from './Charts'
+import { Bars, CategoryList, Donut } from './Charts'
 
 type Tab = 'summary' | 'ranking' | 'search'
 
@@ -210,12 +210,12 @@ function SummaryTab({
 
       <div className="section">
         <h3>発生場所</h3>
-        <CategoryList items={summary.by_place} total={summary.total} />
+        <Donut items={summary.by_place} total={summary.total} />
       </div>
 
       <div className="section">
         <h3>被害者の年齢</h3>
-        <CategoryList items={summary.by_age} total={summary.total} />
+        <Donut items={summary.by_age} total={summary.total} />
       </div>
 
       <div className="section">
