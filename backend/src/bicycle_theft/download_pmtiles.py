@@ -2,7 +2,7 @@
 
 import json
 import subprocess
-from urllib.request import urlopen
+from urllib.request import Request, urlopen
 
 from bicycle_theft.census_bbox import census_bbox
 from bicycle_theft.paths import RAW_DIR
@@ -16,7 +16,9 @@ MARGIN_KM = 12
 
 
 def latest_build_key() -> str:
-    with urlopen(BUILDS_URL) as response:
+    # The build listing answers 403 to urllib's default User-Agent.
+    request = Request(BUILDS_URL, headers={"User-Agent": "bicycle-theft-prediction (uv run download-pmtiles)"})
+    with urlopen(request) as response:
         builds = json.load(response)
     # Keys are <YYYYMMDD>.pmtiles, so the lexicographic max is the newest build.
     return max(build["key"] for build in builds)
