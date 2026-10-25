@@ -51,8 +51,10 @@ def dataset(request: Request) -> Dataset:
 def get_pmtiles() -> FileResponse:
     if not PMTILES_PATH.exists():
         raise HTTPException(404, f"{PMTILES_PATH} missing; run `uv run download-pmtiles`")
-    # Starlette honours Range headers, which is all the pmtiles client needs.
-    return FileResponse(PMTILES_PATH, media_type="application/octet-stream")
+    # Starlette honours Range headers, which is all the pmtiles client needs. Browsers must
+    # revalidate (ETag) rather than reuse cached ranges: after a fresh `download-pmtiles` the
+    # cached header would point tiles at offsets of the old file.
+    return FileResponse(PMTILES_PATH, media_type="application/octet-stream", headers={"Cache-Control": "no-cache"})
 
 
 @app.get("/api/meta")
