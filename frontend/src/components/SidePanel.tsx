@@ -154,7 +154,7 @@ function SummaryTab({
           <div className="value" style={{ fontSize: 16 }}>
             {comparable ? <Delta current={summary.total} previous={summary.prev_total} /> : '—'}
           </div>
-          <div className="label">{comparable ? `前期間 ${summary.prev_total}件` : '記録開始前のため比較なし'}</div>
+          <div className="label">{comparable ? `前期間 ${summary.prev_total}件` : '前期間は記録外'}</div>
         </div>
         <div className="kpi">
           <div className="label">千人あたり</div>
