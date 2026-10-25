@@ -1,13 +1,11 @@
 """Merge the yearly Fukuoka bicycle-theft CSVs in data/raw/ into one typed Parquet file in data/processed/."""
 
 import io
-import shutil
+import tempfile
 from datetime import date
 from pathlib import Path
 
-import dlt
 import polars as pl
-from dlt.common.typing import TDataItems
 
 from bicycle_theft.paths import PROCESSED_DIR, RAW_DIR
 
@@ -35,6 +33,9 @@ def decode(path: Path) -> str:
 
 def read_raw_csv(path: Path) -> pl.DataFrame:
     df = pl.read_csv(io.BytesIO(decode(path).encode("utf-8")), infer_schema=False)
+    missing = {DATE_COLUMN, HOUR_COLUMN} - set(df.columns)
+    if missing:
+        raise ValueError(f"{path}: missing required columns {sorted(missing)}")
     # Some files are padded with comma-only rows (2018 has ~1M of them).
     return df.filter(~pl.all_horizontal(pl.all().is_null()))
 
@@ -58,27 +59,30 @@ def parse_types(df: pl.DataFrame) -> pl.DataFrame:
     return typed
 
 
-@dlt.resource(name=TABLE_NAME, write_disposition="replace")
-def raw_csv_rows(raw_dir: Path = RAW_DIR):
-    # Older years use a different set of columns, so union them by name; columns a
-    # year doesn't have are left empty.
-    frames = [read_raw_csv(path) for path in sorted(raw_dir.glob("*.csv"))]
+def raw_csv_rows(raw_dir: Path | None = None):
+    # Resolve at call time so CLI/test callers use the documented directory layout.
+    raw_dir = raw_dir if raw_dir is not None else RAW_DIR / "bicycle-thefts"
+    paths = sorted(raw_dir.glob("*.csv"))
+    if not paths:
+        raise FileNotFoundError(f"no theft CSV files found under {raw_dir}")
+    frames = [read_raw_csv(path) for path in paths]
     yield parse_types(pl.concat(frames, how="diagonal")).to_arrow()
 
 
-# batch_size=0 hands the sink each whole load file instead of batches of rows, so every
-# table is copied to a single Parquet file as dlt wrote it.
-@dlt.destination(batch_size=0, loader_file_format="parquet")
-def parquet_file(items: TDataItems | str, table) -> None:
-    assert isinstance(items, str)  # with batch_size=0, items is the load file's path
+def main() -> None:
+    frame = pl.from_arrow(next(raw_csv_rows()))
     PROCESSED_DIR.mkdir(parents=True, exist_ok=True)
-    shutil.copyfile(items, PROCESSED_DIR / f"{table['name']}.parquet")
-
-
-def main():
-    pipeline = dlt.pipeline(pipeline_name="raw_to_processed", destination=parquet_file())
-    load_info = pipeline.run(raw_csv_rows())
-    print(load_info)
+    output = PROCESSED_DIR / f"{TABLE_NAME}.parquet"
+    # One complete file, swapped only on success. A per-load-file sink can overwrite
+    # earlier shards, and copying directly to the live path exposes partial files.
+    with tempfile.NamedTemporaryFile(dir=PROCESSED_DIR, suffix=".parquet", delete=False) as handle:
+        temporary = Path(handle.name)
+    try:
+        frame.write_parquet(temporary)
+        temporary.replace(output)
+    finally:
+        temporary.unlink(missing_ok=True)
+    print(f"wrote {frame.height} thefts to {output}")
 
 
 if __name__ == "__main__":
