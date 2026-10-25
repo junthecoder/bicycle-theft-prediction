@@ -20,6 +20,7 @@ import baseStyle from './basemap-style.json'
 import type { AreaFeatureCollection, AreaProperties, CityOutlineFeatureCollection } from './client'
 import type { OverlayInsets } from './hooks/useOverlayInsets'
 import { fillColorExpression } from './lib/color'
+import { focusOptions, formatValue } from './lib/mapDisplay'
 import { METRIC_LABELS, type Metric } from './lib/period'
 
 // The generated style points its source at pmtiles:///tiles/fukuoka.pmtiles, which the Vite dev
@@ -106,11 +107,6 @@ function geometryBounds(geometry: Geometry): Bounds {
   return [minX, minY, maxX, maxY]
 }
 
-function formatValue(value: AreaValue | undefined, metric: Metric): string {
-  if (metric === 'count') return `${value?.count ?? 0}件`
-  if (!value) return '0'
-  return value.rate === null ? '—' : value.rate.toFixed(1)
-}
 
 function MapView({
   areas,
@@ -185,7 +181,7 @@ function MapView({
     if (!map || !focus || !areas) return
     const feature = areas.features.find((f) => f.properties.key_code === focus.keyCode)
     if (!feature) return
-    map.fitBounds(geometryBounds(feature.geometry as unknown as Geometry), { padding: 60, maxZoom: 16, duration: 800 })
+    map.fitBounds(geometryBounds(feature.geometry as unknown as Geometry), focusOptions(insets))
   }, [focus, areas])
 
   const setHovered = (keyCode: string | null) => {
@@ -331,7 +327,7 @@ function MapView({
           ) : (
             <div className="popup-row">
               <span>{METRIC_LABELS[metric]}</span>
-              <strong>{formatValue(hoverValue, metric)}</strong>
+              <strong>{formatValue(hoverValue, metric, hover.properties.population, minPopulationForRate)}</strong>
             </div>
           )}
           {metric === 'rate' && !hoverUnrecorded && (
