@@ -62,7 +62,7 @@ def main():
         lines += [f"- {value}" for value in report[field]]
     (directory / "findings.md").write_text("\n".join(lines) + "\n")
     with (directory / "findings.csv").open("w", newline="") as stream:
-        writer = csv.DictWriter(stream, fieldnames=list(findings[0]))
+        writer = csv.DictWriter(stream, fieldnames=list(findings[0]), lineterminator="\n")
         writer.writeheader()
         writer.writerows(
             {
