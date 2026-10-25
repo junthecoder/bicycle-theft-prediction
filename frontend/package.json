@@ -10,7 +10,7 @@
     "preview": "vite preview",
     "generate_style": "generate_style src/basemap-style.json pmtiles:///tiles/fukuoka.pmtiles light ja",
     "generate:api": "openapi-ts",
-    "test": "tsx --test tests/*.test.ts tests/*.test.tsx"
+    "test": "node --import tsx --test tests/*.test.ts tests/*.test.tsx"
   },
   "dependencies": {
     "@holiday-jp/holiday_jp": "^2.5.2",
