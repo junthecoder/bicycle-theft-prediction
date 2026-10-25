@@ -1,0 +1,54 @@
+name: Repository checks
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: '17 2 * * 1'
+permissions:
+  contents: read
+concurrency:
+  group: checks-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+        with:
+          python-version: '3.15'
+      - run: uv sync --frozen
+      - run: uv run python -m unittest discover -s tests -v
+      - run: uv run ruff check --config pyproject.toml src tests ../scripts
+      - run: uv run ruff format --config pyproject.toml --check src tests ../scripts
+      - run: uv run export-openapi
+      - run: git diff --exit-code -- openapi.json
+      - name: Audit locked Python dependencies
+        run: |
+          uv export --frozen --no-hashes --no-emit-project --output-file /tmp/requirements-audit.txt
+          uv tool run pip-audit --no-deps --disable-pip -r /tmp/requirements-audit.txt
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+      - run: npm install --global pnpm@12.15.0
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm test
+      - run: pnpm lint
+      - run: pnpm build
+      - run: pnpm generate:api
+      - run: git diff --exit-code -- src/client
+      - run: pnpm audit --audit-level=low

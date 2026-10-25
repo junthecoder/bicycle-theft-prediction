@@ -1,0 +1,27 @@
+{
+  "python": "3.15.0",
+  "platform": "macOS-27.0.1-arm64-arm-64bit-Mach-O",
+  "iterations": 30,
+  "theft_rows": 33789,
+  "areas": 1140,
+  "load_ms": 18.129,
+  "operations": {
+    "meta": {
+      "median_ms": 2.88,
+      "p95_ms": 3.476
+    },
+    "area_counts": {
+      "median_ms": 4.529,
+      "p95_ms": 5.273
+    },
+    "summary": {
+      "median_ms": 5.451,
+      "p95_ms": 6.262
+    },
+    "timeline": {
+      "median_ms": 2.077,
+      "p95_ms": 8.119
+    }
+  },
+  "scope": "Warm in-process query timings; excludes HTTP, network, browser and GPU; descriptive baseline only."
+}

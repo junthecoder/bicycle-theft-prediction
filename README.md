@@ -83,3 +83,26 @@ https://www.e-stat.go.jp/gis/statmap-search/data?statsId=T001082&code=40&downloa
 ### PMTiles
 
 Run `uv run download-pmtiles` in `backend/` to download PMTiles for Fukuoka city.
+
+## Verification and audit
+
+Use Python 3.15+, Node.js 24 and pnpm 12.15.0 (pinned in `frontend/package.json`).
+
+```sh
+cd backend
+uv sync --frozen
+uv run python -m unittest discover -s tests -v
+uv run ruff check src tests
+uv run ruff format --check src tests
+cd ../frontend
+pnpm install --frozen-lockfile
+pnpm test
+pnpm lint
+pnpm build
+```
+
+Tests use synthetic fixtures and need no untracked datasets. GitHub Actions also checks generated API drift and dependency advisories, including a weekly scan. The pnpm workspace settings restrict dependency build scripts to esbuild and require a patched js-yaml version for API generation.
+
+The API bug-fix release is **0.1.1**. Invalid windows now return 422 instead of overflowing, unknown timeline areas return 404, and timelines include zero-count months. Existing successful response shapes are preserved.
+
+The [repository audit](docs/audit/README.md) links the findings in Markdown, JSON and CSV, test evidence, dependency scan results, limitations and performance measurements. For production, serve the frontend build behind a same-origin reverse proxy for `/api` and `/tiles`; the Vite development proxy does not configure production hosting.

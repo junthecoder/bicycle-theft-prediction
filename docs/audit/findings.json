@@ -1,0 +1,446 @@
+{
+  "date": "2026-10-25",
+  "baseline": "0022d1a",
+  "delivery_branch": "chore/audit/repository-review",
+  "api_version": "0.1.1",
+  "findings": [
+    {
+      "id": "BUG-001",
+      "title": "Pipeline cannot read the documented input layout",
+      "severity": "high",
+      "category": "integration",
+      "files": [
+        "backend/src/bicycle_theft/pipeline.py"
+      ],
+      "component": "CSV ingestion",
+      "current_behavior": "Running pipeline with CSVs under data/raw/bicycle-thefts fails with cannot concat empty list.",
+      "expected_behavior": "Read that directory, validate each input, and publish every input row only after a successful export.",
+      "root_cause": "The default glob targeted data/raw/*.csv. The old per-load-file destination also copied each shard to one live path.",
+      "impact": "The documented setup cannot rebuild its essential dataset. Direct copies also expose incomplete output; multiple load shards could overwrite one another.",
+      "reproduction": "Put two valid yearly CSVs under a temporary raw/bicycle-thefts directory and invoke main with temporary raw/processed paths.",
+      "verification": "test_pipeline.py: multi-file row count, actionable empty input, malformed input preserves old output, failed partial write preserves old output and removes staging. Full local input rebuilt to a temporary directory: 63,083 rows, no live data changed.",
+      "priority": "P1",
+      "complexity": "medium",
+      "status": "fixed",
+      "branch": "fix/pipeline/reliable-parquet-output",
+      "fix_commit": "f401ffb",
+      "sources": []
+    },
+    {
+      "id": "BUG-002",
+      "title": "Malformed compact dates become Excel serial dates",
+      "severity": "high",
+      "category": "data integrity",
+      "files": [
+        "backend/src/bicycle_theft/pipeline.py"
+      ],
+      "component": "Date parser",
+      "current_behavior": "20241301 silently becomes year 57318 instead of failing validation.",
+      "expected_behavior": "Reject invalid calendar dates; retain documented date formats and unknown/null values.",
+      "root_cause": "The coalesce fallback interpreted any integer as an Excel day count.",
+      "impact": "Corrupt dates can break Python/Pydantic date conversion and move incidents outside the visible period.",
+      "reproduction": "Pass 20241301 or 20250230 to parse_types with an otherwise valid hour.",
+      "verification": "test_parsing.py rejects malformed compact dates; valid slash dates, compact dates, five-digit Excel serials and unknowns still parse.",
+      "priority": "P1",
+      "complexity": "low",
+      "status": "fixed",
+      "branch": "fix/pipeline/validate-date-and-hour-values",
+      "fix_commit": "a20a4b4",
+      "sources": []
+    },
+    {
+      "id": "BUG-003",
+      "title": "Hours outside 0–23 enter the dataset",
+      "severity": "medium",
+      "category": "edge case",
+      "files": [
+        "backend/src/bicycle_theft/pipeline.py"
+      ],
+      "component": "Hour parser",
+      "current_behavior": "-1, 24 and 127 are accepted as hours.",
+      "expected_behavior": "Reject values outside 0–23 while retaining 不明/null.",
+      "root_cause": "Int8 conversion checked storage range rather than the domain of hours.",
+      "impact": "Summary totals can disagree with the 24 hourly bins and hour filters.",
+      "reproduction": "Pass each invalid hour to parse_types with a valid date.",
+      "verification": "test_parsing.py tests negative, 24, 127, fractional and nonnumeric hours plus valid boundaries.",
+      "priority": "P2",
+      "complexity": "low",
+      "status": "fixed",
+      "branch": "fix/pipeline/validate-date-and-hour-values",
+      "fix_commit": "a20a4b4",
+      "sources": []
+    },
+    {
+      "id": "BUG-004",
+      "title": "Duplicate area names select the smaller population",
+      "severity": "high",
+      "category": "functional",
+      "files": [
+        "backend/src/bicycle_theft/api/data.py"
+      ],
+      "component": "Census join",
+      "current_behavior": "壱岐団地 thefts map to 40135026002 (population 1,163), contrary to the documented preference for 40135026001 (3,537).",
+      "expected_behavior": "Choose the most populous matching area deterministically.",
+      "root_cause": "A descending population sort was followed by a dictionary comprehension; later, smaller areas overwrote earlier entries.",
+      "impact": "Thefts appear in the wrong polygon and per-capita rates use the wrong denominator.",
+      "reproduction": "Call area_lookup on the two same-name areas in either input order.",
+      "verification": "test_area_matching.py checks both orders; population sort plus key-code tie break and first-entry preservation.",
+      "priority": "P1",
+      "complexity": "low",
+      "status": "fixed",
+      "branch": "fix/api/correct-area-matching",
+      "fix_commit": "c3d68ea",
+      "sources": []
+    },
+    {
+      "id": "BUG-005",
+      "title": "Parent-town and 大字 fallbacks do not compose",
+      "severity": "medium",
+      "category": "functional",
+      "files": [
+        "backend/src/bicycle_theft/api/data.py"
+      ],
+      "component": "Area normalization",
+      "current_behavior": "北原１丁目 fails to match 大字北原 when both a parent-town and prefix fallback are needed.",
+      "expected_behavior": "Apply the 大字 fallback to the normalized name and its parent town.",
+      "root_cause": "Only the original name received the prefix.",
+      "impact": "Otherwise recognizable incidents remain unmapped.",
+      "reproduction": "Use a lookup containing only (40135, 大字北原) and match 北原１丁目.",
+      "verification": "test_area_matching.py covers composed fallbacks, ward isolation and null names.",
+      "priority": "P2",
+      "complexity": "low",
+      "status": "fixed",
+      "branch": "fix/api/correct-area-matching",
+      "fix_commit": "c3d68ea",
+      "sources": []
+    },
+    {
+      "id": "BUG-006",
+      "title": "A single legacy year can fail API startup",
+      "severity": "medium",
+      "category": "integration",
+      "files": [
+        "backend/src/bicycle_theft/api/data.py"
+      ],
+      "component": "Parquet schema compatibility",
+      "current_behavior": "Reading or renaming optional columns fails when a whole year lacks them.",
+      "expected_behavior": "Require identifying/date/hour columns; fill absent optional category columns with typed nulls.",
+      "root_cause": "The loader requested every possible yearly column unconditionally.",
+      "impact": "Valid supported yearly input cannot be served unless other years happen to supply all columns.",
+      "reproduction": "Load a frame with date, hour, city, area and legacy 発生場所の属性 but without newer place/age/lock columns.",
+      "verification": "test_area_matching.py checks successful join, legacy place fallback and null age.",
+      "priority": "P2",
+      "complexity": "low",
+      "status": "fixed",
+      "branch": "fix/api/legacy-year-schema",
+      "fix_commit": "eeb72b6",
+      "sources": []
+    },
+    {
+      "id": "BUG-007",
+      "title": "Accepted date windows cause HTTP 500 overflow",
+      "severity": "medium",
+      "category": "edge case",
+      "files": [
+        "backend/src/bicycle_theft/api/app.py",
+        "backend/src/bicycle_theft/api/data.py"
+      ],
+      "component": "Query validation",
+      "current_behavior": "Very large days, end=0001-01-01, or a representable current window with an unrepresentable prior window produce 500.",
+      "expected_behavior": "Return a documented 422 validation response before constructing invalid dates.",
+      "root_cause": "days had no calendar bound, and previous-window subtraction was unchecked.",
+      "impact": "Untrusted query parameters trigger predictable service errors and failed statistics requests.",
+      "reproduction": "Request by-area and summary with days=10**100; or end=0001-01-01 and days=1; or end=2025-01-01 and days=500000.",
+      "verification": "test_api.py checks all cases on both endpoints and normal current/previous totals. 422 detail follows the existing validation-error shape.",
+      "priority": "P2",
+      "complexity": "low",
+      "status": "fixed",
+      "branch": "fix/api/validate-window-and-timeline",
+      "fix_commit": "54be6a4",
+      "sources": []
+    },
+    {
+      "id": "BUG-008",
+      "title": "Timeline contract loses empty months and accepts unknown areas",
+      "severity": "medium",
+      "category": "API contract",
+      "files": [
+        "backend/src/bicycle_theft/api/app.py",
+        "backend/src/bicycle_theft/api/data.py"
+      ],
+      "component": "Monthly timeline",
+      "current_behavior": "Unknown areas return 200 with an empty list while summary returns 404; filters remove zero-count months from the timeline.",
+      "expected_behavior": "Unknown keys return 404; valid filtered timelines retain a common monthly calendar with explicit zeros.",
+      "root_cause": "The timeline did not validate area membership or reindex grouped results against the calendar.",
+      "impact": "Clients cannot distinguish invalid keys from valid areas without thefts, and sparse calendars are ambiguous.",
+      "reproduction": "Request timeline?key_code=missing; then filter a fixture with January thefts and no matching February/March thefts.",
+      "verification": "test_api.py checks consistent 404, January count and zero months from coverage start through the latest data month.",
+      "priority": "P2",
+      "complexity": "medium",
+      "status": "fixed",
+      "branch": "fix/api/complete-timeline-contract",
+      "fix_commit": "df3eaea",
+      "sources": []
+    },
+    {
+      "id": "BUG-009",
+      "title": "Async requests run before prerequisites and retain stale errors",
+      "severity": "medium",
+      "category": "state management",
+      "files": [
+        "frontend/src/hooks/useAsync.ts",
+        "frontend/src/App.tsx"
+      ],
+      "component": "Request lifecycle",
+      "current_behavior": "Slow metadata starts no-period requests; an error from an old key remains visible during a new request. Summary, outline and timeline errors were omitted from App error selection.",
+      "expected_behavior": "Wait for prerequisites, hide obsolete errors, abort stale requests, and surface required endpoint failures.",
+      "root_cause": "The hook had no disabled key and always returned the last error, regardless of key; App checked only three request errors.",
+      "impact": "Slow/recovering requests can show false failure screens; failed secondary data can leave stale or incomplete views without an explanation.",
+      "reproduction": "Mount with no request key, then a rejecting key, then a pending key; resolve an older request after switching keys.",
+      "verification": "async.test.tsx checks zero calls before prerequisites, error reset on key changes, abort signal and stale-response rejection. App error aggregation reviewed statically.",
+      "priority": "P2",
+      "complexity": "medium",
+      "status": "fixed",
+      "branch": "fix/frontend/request-lifecycle",
+      "fix_commit": "9becd3d",
+      "sources": []
+    },
+    {
+      "id": "BUG-010",
+      "title": "Ranking shows comparison deltas outside data coverage",
+      "severity": "medium",
+      "category": "functional",
+      "files": [
+        "frontend/src/components/SidePanel.tsx"
+      ],
+      "component": "Ranking",
+      "current_behavior": "Early/all-period windows show ▲ increases against an unsupported previous window, although summary correctly suppresses that comparison.",
+      "expected_behavior": "Show — when the preceding full window is outside coverage.",
+      "root_cause": "Ranking did not apply the coverage check used by summary.",
+      "impact": "Users can read unavailable historical data as a real increase in thefts.",
+      "reproduction": "Render ranking for end=2018-01-02, days=7, coverage starting 2018-01-01, count=5 and prev_count=0.",
+      "verification": "display.test.tsx verifies — near the start and ▲5 when comparison is supported; baseline component was rerun with the corrected JSX harness and failed as expected.",
+      "priority": "P2",
+      "complexity": "low",
+      "status": "fixed",
+      "branch": "fix/frontend/consistent-comparison-and-map-values",
+      "fix_commit": "f80b837",
+      "sources": []
+    },
+    {
+      "id": "BUG-011",
+      "title": "Hour-chart buttons cannot be reached or activated by keyboard",
+      "severity": "low",
+      "category": "accessibility",
+      "files": [
+        "frontend/src/components/Charts.tsx"
+      ],
+      "component": "Interactive charts",
+      "current_behavior": "Clickable divs declare role=button but have no tab stop, keyboard handler or accessible label.",
+      "expected_behavior": "Tab reaches each interactive bar; Enter/Space selects its hour; accessible text identifies the value.",
+      "root_cause": "Only mouse click behavior was implemented.",
+      "impact": "Keyboard-only users cannot use the advertised hour filtering interaction.",
+      "reproduction": "Render Bars with onClick; inspect tabIndex and dispatch Enter/Space.",
+      "verification": "display.test.tsx asserts tabIndex=0, both key activations and a nonempty accessible label.",
+      "priority": "P3",
+      "complexity": "low",
+      "status": "fixed",
+      "branch": "fix/frontend/keyboard-chart-controls",
+      "fix_commit": "e568cff",
+      "sources": []
+    },
+    {
+      "id": "BUG-012",
+      "title": "Low-population zero-count areas show a misleading numeric rate",
+      "severity": "low",
+      "category": "display",
+      "files": [
+        "frontend/src/Map.tsx",
+        "frontend/src/lib/mapDisplay.ts"
+      ],
+      "component": "Map popup",
+      "current_behavior": "Areas absent from both count windows show 0 in the rate popup even when population is below the suppression threshold.",
+      "expected_behavior": "Show — below the population threshold, consistently with the map fill and summary.",
+      "root_cause": "The formatter returned zero for missing count entries without checking population.",
+      "impact": "The popup implies a valid rate where the API intentionally suppresses it.",
+      "reproduction": "Format a rate with no count entry, population=50 and minimum=100.",
+      "verification": "map-display.test.ts checks suppressed rates, valid zero rates and count mode.",
+      "priority": "P3",
+      "complexity": "low",
+      "status": "fixed",
+      "branch": "fix/frontend/map-rate-and-focus",
+      "fix_commit": "ccb6ae7",
+      "sources": []
+    },
+    {
+      "id": "BUG-013",
+      "title": "Map focus ignores overlay space and changes persistent padding",
+      "severity": "medium",
+      "category": "functional",
+      "files": [
+        "frontend/src/Map.tsx",
+        "frontend/src/lib/mapDisplay.ts"
+      ],
+      "component": "Map camera",
+      "current_behavior": "fitBounds uses padding=60 on all sides, ignoring the measured panels, and stores that padding by default.",
+      "expected_behavior": "Fit the selected feature within the visible area and leave persistent layout padding intact.",
+      "root_cause": "The camera call overrode overlay-aware padding and did not set retainPadding=false.",
+      "impact": "A selected area can be framed beneath controls, and subsequent pans can use displaced padding.",
+      "reproduction": "Inspect focus options for top=250/right=372 insets and the actual fitBounds caller.",
+      "verification": "map-display.test.ts checks overlay-adjusted padding and retainPadding=false. Source readiness and caller wiring reviewed; live GPU behavior remains unverified.",
+      "priority": "P2",
+      "complexity": "low",
+      "status": "fixed",
+      "branch": "fix/frontend/map-rate-and-focus",
+      "fix_commit": "ccb6ae7",
+      "sources": []
+    },
+    {
+      "id": "BUG-014",
+      "title": "Download failures leave shared partial files and metadata can wait indefinitely",
+      "severity": "medium",
+      "category": "integration",
+      "files": [
+        "backend/src/bicycle_theft/download_pmtiles.py"
+      ],
+      "component": "Basemap download",
+      "current_behavior": "A failed extraction leaves fukuoka.pmtiles.part; retries reuse that path. The metadata request has no timeout.",
+      "expected_behavior": "Use a unique staging directory, remove partial output on failure, retain the old basemap and bound metadata waiting.",
+      "root_cause": "A fixed staging filename had no cleanup, and urlopen used its default unlimited timeout.",
+      "impact": "Failed or concurrent downloads can interfere with retries, and an unresponsive listing can hang the command.",
+      "reproduction": "Mock extraction to write a partial file then fail; mock urlopen and inspect its timeout.",
+      "verification": "test_download.py checks cleanup, preservation of the previous map, successful replacement, parent-directory creation and a 30-second metadata timeout. No full planet extraction is run.",
+      "priority": "P2",
+      "complexity": "low",
+      "status": "fixed",
+      "branch": "fix/download/recover-partial-extracts",
+      "fix_commit": "e4ca0d7",
+      "sources": []
+    },
+    {
+      "id": "BUG-015",
+      "title": "js-yaml merge-chain CPU exhaustion",
+      "severity": "high",
+      "category": "security",
+      "files": [
+        "frontend/pnpm-lock.yaml",
+        "frontend/pnpm-workspace.yaml"
+      ],
+      "component": "OpenAPI generator dependency",
+      "current_behavior": "The locked js-yaml 4.2.0 matches GHSA-52cp-r559-cp3m (>=4.0.0 <4.3.0).",
+      "expected_behavior": "Use a release patched for every advisory, at least 4.3.0 for this issue.",
+      "root_cause": "A transitive API-generator dependency resolved to a vulnerable release.",
+      "impact": "Crafted YAML processed by development tooling can consume excessive CPU. This dependency is not in the shipped browser application; no production exploit is demonstrated.",
+      "reproduction": "Run pnpm audit against the original committed package.json and pnpm-lock.yaml in a temporary directory.",
+      "verification": "frontend-audit-before.json reports the high advisory; after override to ^4.3.2, lock resolves 4.3.2 and frontend-audit-after.json reports zero advisories. API generation and build pass.",
+      "priority": "P1",
+      "complexity": "low",
+      "status": "fixed",
+      "branch": "fix/dependencies/patch-yaml-advisories",
+      "fix_commit": "4170200",
+      "sources": [
+        "https://github.com/advisories/GHSA-52cp-r559-cp3m"
+      ]
+    },
+    {
+      "id": "BUG-016",
+      "title": "js-yaml ordered-map CPU exhaustion",
+      "severity": "high",
+      "category": "security",
+      "files": [
+        "frontend/pnpm-lock.yaml",
+        "frontend/pnpm-workspace.yaml"
+      ],
+      "component": "OpenAPI generator dependency",
+      "current_behavior": "The locked js-yaml 4.2.0 matches GHSA-5p4m-2wfm-xmqj (>=4.0.0 <4.3.1).",
+      "expected_behavior": "Use a release patched for every advisory, at least 4.3.1 for this issue.",
+      "root_cause": "A transitive API-generator dependency resolved to a vulnerable release.",
+      "impact": "Crafted YAML processed by development tooling can consume excessive CPU. This dependency is not in the shipped browser application; no production exploit is demonstrated.",
+      "reproduction": "Run pnpm audit against the original committed package.json and pnpm-lock.yaml in a temporary directory.",
+      "verification": "frontend-audit-before.json reports the high advisory; after override to ^4.3.2, lock resolves 4.3.2 and frontend-audit-after.json reports zero advisories. API generation and build pass.",
+      "priority": "P1",
+      "complexity": "low",
+      "status": "fixed",
+      "branch": "fix/dependencies/patch-yaml-advisories",
+      "fix_commit": "4170200",
+      "sources": [
+        "https://github.com/advisories/GHSA-5p4m-2wfm-xmqj"
+      ]
+    },
+    {
+      "id": "BUG-017",
+      "title": "js-yaml empty-merge CPU exhaustion",
+      "severity": "high",
+      "category": "security",
+      "files": [
+        "frontend/pnpm-lock.yaml",
+        "frontend/pnpm-workspace.yaml"
+      ],
+      "component": "OpenAPI generator dependency",
+      "current_behavior": "The locked js-yaml 4.2.0 matches GHSA-2883-xcg3-v3hh (>=4.0.0 <4.3.2).",
+      "expected_behavior": "Use a release patched for every advisory, at least 4.3.2 for this issue.",
+      "root_cause": "A transitive API-generator dependency resolved to a vulnerable release.",
+      "impact": "Crafted YAML processed by development tooling can consume excessive CPU. This dependency is not in the shipped browser application; no production exploit is demonstrated.",
+      "reproduction": "Run pnpm audit against the original committed package.json and pnpm-lock.yaml in a temporary directory.",
+      "verification": "frontend-audit-before.json reports the high advisory; after override to ^4.3.2, lock resolves 4.3.2 and frontend-audit-after.json reports zero advisories. API generation and build pass.",
+      "priority": "P1",
+      "complexity": "low",
+      "status": "fixed",
+      "branch": "fix/dependencies/patch-yaml-advisories",
+      "fix_commit": "4170200",
+      "sources": [
+        "https://github.com/advisories/GHSA-2883-xcg3-v3hh"
+      ]
+    },
+    {
+      "id": "BUG-018",
+      "title": "Mobile layout hides the only metric selector",
+      "severity": "medium",
+      "category": "functional",
+      "files": [
+        "frontend/src/App.css",
+        "frontend/src/App.tsx",
+        "frontend/src/components/TimeControls.tsx",
+        "frontend/src/components/MetricSelector.tsx"
+      ],
+      "component": "Responsive controls",
+      "current_behavior": "At widths <=760px the floating legend is hidden, taking the count/per-capita radio group with it.",
+      "expected_behavior": "Keep metric selection available in the mobile time panel.",
+      "root_cause": "The selector existed only inside the hidden legend.",
+      "impact": "Mobile users cannot switch the map metric.",
+      "reproduction": "Render the time panel and inspect the mobile breakpoint hiding the floating legend.",
+      "verification": "mobile-controls.test.tsx mounts the panel, finds the mobile selector and switches to rate. CSS breakpoint/display rules reviewed statically; actual viewport layout remains a browser-test limitation.",
+      "priority": "P2",
+      "complexity": "low",
+      "status": "fixed",
+      "branch": "fix/frontend/mobile-metric-control",
+      "fix_commit": "9bf2167",
+      "sources": []
+    }
+  ],
+  "assumptions": [
+    "Supported raw CSVs contain the documented date/hour columns; API data requires city and area columns.",
+    "Positive 1–5 digit Excel serials cover the current police files; other integer-looking dates are not accepted as serials.",
+    "Synthetic tests require no local data. The read-only local-data integration run and benchmark require the untracked datasets.",
+    "Fix branches are stacked by component; closely related defects can share a fix commit and branch. Tests covering multiple defects were committed together before their fixes."
+  ],
+  "limitations": [
+    "No finite review proves that every possible defect has been found.",
+    "Browser automation stalled before app navigation; no browser/GPU or responsive visual smoke test is claimed.",
+    "CI was authored and locally checked but has not run on GitHub; no remote push or deployment was performed.",
+    "Advisory results are a point-in-time check, with platform marker filtering; they do not establish absence of unknown vulnerabilities.",
+    "Semantic ccc indexing required unavailable global configuration; direct source review/search was used.",
+    "Full external PMTiles downloads and source-dataset correctness were not independently validated.",
+    "The old dlt shard-overwrite risk was identified from its unconditional same-path copy; no forced dlt multi-shard load was executed. The replacement eliminates that design.",
+    "GitHub documents pnpm update-bot support through version 10; frontend pnpm 12 dependencies use weekly advisory checks and manual lockfile updates rather than a potentially unsupported Dependabot job."
+  ],
+  "recommendations": [
+    "Require the committed CI checks on pull requests, and review weekly dependency-update PRs.",
+    "Keep schema/contract generation in CI to catch drift; use explicit domain validation before data publication.",
+    "Monitor API request latency, 4xx/5xx counts and file/range errors without logging raw query content unnecessarily.",
+    "Record ingestion row counts, rejected dates/hours, source-year coverage, unmapped counts and duplicate-name decisions.",
+    "Add browser/GPU smoke tests for map camera changes, mobile layout and worker loading in an environment with reliable browser control.",
+    "Track bundle transfer size and browser startup before adding performance budgets; the map bundle warning alone does not establish a defect.",
+    "Treat areas with no recorded theft as an observation, not proof that police exclude those names; validate that interpretation with the source owner."
+  ]
+}

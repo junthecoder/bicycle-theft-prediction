@@ -1,0 +1,86 @@
+{
+  "advisories": {
+    "1123911": {
+      "findings": [
+        {
+          "version": "4.2.0",
+          "paths": [
+            ".>@hey-api/openapi-ts>@hey-api/shared>@hey-api/json-schema-ref-parser>js-yaml",
+            ".>@hey-api/openapi-ts>@hey-api/json-schema-ref-parser>js-yaml"
+          ],
+          "dev": true,
+          "optional": false,
+          "bundled": false
+        }
+      ],
+      "id": 1123911,
+      "title": "js-yaml: YAML merge-key chains can force quadratic CPU consumption",
+      "module_name": "js-yaml",
+      "vulnerable_versions": ">=4.0.0 <4.3.0",
+      "patched_versions": ">=4.3.0",
+      "severity": "high",
+      "cwe": "CWE-400, CWE-407",
+      "github_advisory_id": "GHSA-52cp-r559-cp3m",
+      "url": "https://github.com/advisories/GHSA-52cp-r559-cp3m"
+    },
+    "1138115": {
+      "findings": [
+        {
+          "version": "4.2.0",
+          "paths": [
+            ".>@hey-api/openapi-ts>@hey-api/shared>@hey-api/json-schema-ref-parser>js-yaml",
+            ".>@hey-api/openapi-ts>@hey-api/json-schema-ref-parser>js-yaml"
+          ],
+          "dev": true,
+          "optional": false,
+          "bundled": false
+        }
+      ],
+      "id": 1138115,
+      "title": "JS-YAML: Quadratic CPU consumption in !!omap resolution (3.x and 4.x) — CVE-2026-59870 fix not backported",
+      "module_name": "js-yaml",
+      "vulnerable_versions": ">=4.0.0 <4.3.1",
+      "patched_versions": ">=4.3.1",
+      "severity": "high",
+      "cwe": "CWE-407",
+      "github_advisory_id": "GHSA-5p4m-2wfm-xmqj",
+      "url": "https://github.com/advisories/GHSA-5p4m-2wfm-xmqj"
+    },
+    "1193727": {
+      "findings": [
+        {
+          "version": "4.2.0",
+          "paths": [
+            ".>@hey-api/openapi-ts>@hey-api/shared>@hey-api/json-schema-ref-parser>js-yaml",
+            ".>@hey-api/openapi-ts>@hey-api/json-schema-ref-parser>js-yaml"
+          ],
+          "dev": true,
+          "optional": false,
+          "bundled": false
+        }
+      ],
+      "id": 1193727,
+      "title": "js-yaml: maxTotalMergeKeys does not limit CPU use for empty merge sources",
+      "module_name": "js-yaml",
+      "vulnerable_versions": ">=4.0.0 <4.3.2",
+      "patched_versions": ">=4.3.2",
+      "severity": "high",
+      "cwe": "CWE-400, CWE-407",
+      "github_advisory_id": "GHSA-2883-xcg3-v3hh",
+      "url": "https://github.com/advisories/GHSA-2883-xcg3-v3hh"
+    }
+  },
+  "metadata": {
+    "vulnerabilities": {
+      "info": 0,
+      "low": 0,
+      "moderate": 0,
+      "high": 3,
+      "critical": 0
+    },
+    "dependencies": 58,
+    "devDependencies": 146,
+    "optionalDependencies": 72,
+    "totalDependencies": 204
+  }
+}
