@@ -44,13 +44,18 @@ def parse_types(df: pl.DataFrame) -> pl.DataFrame:
     # Dates come as 2018/2/1, 20241011 or Excel serials depending on the year; hours as
     # 7 or 07. 不明 (unknown) becomes null.
     raw_date = pl.col(DATE_COLUMN)
+    # A malformed YYYYMMDD value must not fall through as millions of Excel days.
+    # Bound serials to representable Python dates and exclude compact calendar dates.
+    serial = raw_date.cast(pl.Int32, strict=False)
+    excel_days = pl.when(raw_date.str.contains(r"^\d{1,5}$") & serial.is_between(1, 99_999)).then(serial)
+    hour = pl.col(HOUR_COLUMN).cast(pl.Int8, strict=False)
     typed = df.with_columns(
         pl.coalesce(
             raw_date.str.to_date("%Y/%m/%d", strict=False),
             raw_date.str.to_date("%Y%m%d", strict=False),
-            pl.lit(EXCEL_EPOCH) + pl.duration(days=raw_date.cast(pl.Int32, strict=False)),
+            pl.lit(EXCEL_EPOCH) + pl.duration(days=excel_days),
         ),
-        pl.col(HOUR_COLUMN).cast(pl.Int8, strict=False),
+        pl.when(hour.is_between(0, 23)).then(hour).alias(HOUR_COLUMN),
     )
     for column in (DATE_COLUMN, HOUR_COLUMN):
         unparsed = df[column].filter(typed[column].is_null() & (df[column] != UNKNOWN))
