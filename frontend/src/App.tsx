@@ -138,6 +138,8 @@ function App() {
             <span className="subtitle">町丁目別の発生状況</span>
           </div>
           <TimeControls
+            metric={metric}
+            onMetric={onMetric}
             dateMin={meta.data.date_min}
             dateMax={meta.data.date_max}
             period={period}

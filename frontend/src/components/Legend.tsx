@@ -1,5 +1,6 @@
 import { NA_COLOR, RAMP, UNRECORDED_COLOR } from '../lib/color'
-import { METRIC_LABELS, type Metric } from '../lib/period'
+import type { Metric } from '../lib/period'
+import MetricSelector from './MetricSelector'
 
 interface Props {
   metric: Metric
@@ -18,20 +19,7 @@ function Legend({ metric, onMetric, domainMax, locked, onLocked, minPopulationFo
   const format = (v: number) => (Number.isInteger(v) ? String(v) : v.toFixed(1))
   return (
     <div className="panel legend">
-      <div className="segmented" role="radiogroup" aria-label="表示する指標">
-        {(Object.keys(METRIC_LABELS) as Metric[]).map((m) => (
-          <button
-            key={m}
-            type="button"
-            role="radio"
-            aria-checked={metric === m}
-            className={metric === m ? 'active' : ''}
-            onClick={() => onMetric(m)}
-          >
-            {METRIC_LABELS[m]}
-          </button>
-        ))}
-      </div>
+      <MetricSelector metric={metric} onMetric={onMetric} />
       <div>
         <div className="legend-bar" style={{ background: `linear-gradient(to right, ${RAMP.join(', ')})` }} />
         <div className="legend-ticks">

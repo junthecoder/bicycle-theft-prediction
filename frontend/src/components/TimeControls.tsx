@@ -1,10 +1,13 @@
 import type { TimelinePoint } from '../client'
 import { addDays, daysBetween, formatShortDate } from '../lib/date'
-import { formatHourBand, HOUR_PRESETS, isFullDay, type Period, WINDOW_OPTIONS, windowStart } from '../lib/period'
+import { formatHourBand, HOUR_PRESETS, isFullDay, type Metric, type Period, WINDOW_OPTIONS, windowStart } from '../lib/period'
 import DateLabel from './DateLabel'
 import HourRangeSlider from './HourRangeSlider'
+import MetricSelector from './MetricSelector'
 
 interface Props {
+  metric: Metric
+  onMetric: (metric: Metric) => void
   dateMin: string
   dateMax: string
   period: Period
@@ -48,7 +51,7 @@ function Sparkline({ dateMin, dateMax, period, timeline }: Pick<Props, 'dateMin'
   )
 }
 
-function TimeControls({ dateMin, dateMax, period, onChange, timeline, playing, onTogglePlay }: Props) {
+function TimeControls({ dateMin, dateMax, period, onChange, timeline, playing, onTogglePlay, metric, onMetric }: Props) {
   const totalDays = daysBetween(dateMin, dateMax)
   const index = daysBetween(dateMin, period.end)
   const setEnd = (iso: string) => onChange({ ...period, end: iso })
@@ -60,6 +63,7 @@ function TimeControls({ dateMin, dateMax, period, onChange, timeline, playing, o
 
   return (
     <div className="controls">
+      <div className="mobile-metric-selector"><MetricSelector metric={metric} onMetric={onMetric} /></div>
       <div className="date-row">
         <DateLabel iso={period.end} />
         <button type="button" className="icon-button" onClick={() => step(-1)} aria-label="前日" title="前日">

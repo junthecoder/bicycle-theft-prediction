@@ -823,7 +823,15 @@
   }
 }
 
+.mobile-metric-selector {
+  display: none;
+}
+
 @media (max-width: 760px) {
+  .mobile-metric-selector {
+    display: block;
+  }
+
   .overlay.top-left {
     width: auto;
     right: 12px;
