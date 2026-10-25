@@ -127,7 +127,7 @@ function App() {
       <div className="overlay top-left">
         <div className="panel">
           <div className="header">
-            <h1>福岡市 自転車盗マップ</h1>
+            <h1>福岡市 自転車盗難 ホットスポット</h1>
             <span className="subtitle">町丁目別の発生状況</span>
           </div>
           <TimeControls
