@@ -65,7 +65,14 @@ def match_area(lookup: dict[tuple[str, str], str], ward_code: str, name: str | N
 
 
 def load_thefts(areas: pl.DataFrame) -> pl.DataFrame:
-    raw = pl.read_parquet(THEFTS_PATH, columns=list(RAW_COLUMNS)).rename(RAW_COLUMNS)
+    raw = pl.read_parquet(THEFTS_PATH)
+    required = {name for name, alias in RAW_COLUMNS.items() if alias in {"city_code", "area_name", "date", "hour"}}
+    missing = required - set(raw.columns)
+    if missing:
+        raise ValueError(f"theft dataset missing required columns: {sorted(missing)}")
+    # A single legacy year may lack entire optional columns, not just null cells.
+    raw = raw.with_columns(pl.lit(None, dtype=pl.String).alias(name) for name in RAW_COLUMNS if name not in raw.columns)
+    raw = raw.select(list(RAW_COLUMNS)).rename(RAW_COLUMNS)
     city = raw.filter(pl.col("city_code").str.starts_with(FUKUOKA_CITY_PREFIX), pl.col("date").is_not_null())
     lookup = area_lookup(areas)
     pairs = city.select(ward_code=pl.col("city_code").str.slice(0, 5), area_name="area_name").unique()
