@@ -34,3 +34,24 @@ class PipelineTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temp:
             with self.assertRaisesRegex(FileNotFoundError, "CSV"):
                 list(pipeline.raw_csv_rows(Path(temp)))
+
+    def test_failed_write_keeps_previous_output_and_cleans_staging(self):
+        with tempfile.TemporaryDirectory() as temp:
+            output = Path(temp)
+            target = output / f"{pipeline.TABLE_NAME}.parquet"
+            target.write_bytes(b"previous")
+            frame = pl.DataFrame({pipeline.DATE_COLUMN: ["2025/1/1"], pipeline.HOUR_COLUMN: ["12"]})
+
+            def fail_write(self, path, **kwargs):
+                Path(path).write_bytes(b"partial")
+                raise OSError("disk full")
+
+            with (
+                patch.object(pipeline, "PROCESSED_DIR", output),
+                patch.object(pipeline, "raw_csv_rows", return_value=iter([frame.to_arrow()])),
+                patch.object(pl.DataFrame, "write_parquet", fail_write),
+            ):
+                with self.assertRaises(OSError):
+                    pipeline.main()
+            self.assertEqual(target.read_bytes(), b"previous")
+            self.assertEqual(list(output.iterdir()), [target])
