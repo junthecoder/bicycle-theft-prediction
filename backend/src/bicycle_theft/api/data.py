@@ -231,13 +231,25 @@ class Dataset:
         )
 
     def timeline(self, hour_from: int, hour_to: int, key_code: str | None) -> schemas.Timeline:
+        if key_code is not None and not self.areas["key_code"].eq(key_code).any():
+            raise KeyError(key_code)
         df = self.thefts.filter(pl.col("date") >= SLIDER_START, hour_filter(hour_from, hour_to))
         if key_code is not None:
             df = df.filter(pl.col("key_code") == key_code)
         monthly = df.group_by(pl.col("date").dt.truncate("1mo").alias("month")).len().sort("month")
+        # Keep a common calendar axis even when the filter removes whole months.
+        counts = dict(monthly.rows())
+        last = self.thefts["date"].max()
+        months = []
+        month = SLIDER_START
+        while last is not None and month <= last:
+            months.append(schemas.TimelinePoint(month=month, count=counts.get(month, 0)))
+            if month.year == 9999 and month.month == 12:
+                break
+            month = date(month.year + month.month // 12, month.month % 12 + 1, 1)
         return schemas.Timeline(
             hour_from=hour_from,
             hour_to=hour_to,
             key_code=key_code,
-            points=[schemas.TimelinePoint(month=month, count=count) for month, count in monthly.rows()],
+            points=months,
         )

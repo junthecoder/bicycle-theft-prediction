@@ -38,7 +38,7 @@ app = FastAPI(
 
 @app.exception_handler(InvalidWindow)
 async def invalid_window_handler(request: Request, exc: InvalidWindow):
-    return JSONResponse(status_code=422, content={"detail": str(exc)})
+    return JSONResponse(status_code=422, content={"detail": [{"type": "value_error", "loc": ["query", "days"], "msg": str(exc)}]})
 
 EndDate = Annotated[date, Query(description="Last day of the window (inclusive)")]
 # Bound only by Python's calendar; the frontend can still request all available data.
@@ -89,7 +89,7 @@ def get_area_counts(
     return ds.area_counts(ds.window(end, days, hour_from, hour_to))
 
 
-@app.get("/api/thefts/summary")
+@app.get("/api/thefts/summary", responses={404: {"description": "Unknown area"}})
 def get_summary(
     request: Request,
     end: EndDate,
@@ -105,11 +105,14 @@ def get_summary(
         raise HTTPException(404, f"unknown area {key_code}") from None
 
 
-@app.get("/api/thefts/timeline")
+@app.get("/api/thefts/timeline", responses={404: {"description": "Unknown area"}})
 def get_timeline(
     request: Request, hour_from: HourFrom = 0, hour_to: HourTo = 23, key_code: KeyCode = None
 ) -> schemas.Timeline:
-    return dataset(request).timeline(hour_from, hour_to, key_code)
+    try:
+        return dataset(request).timeline(hour_from, hour_to, key_code)
+    except KeyError:
+        raise HTTPException(404, f"unknown area {key_code}") from None
 
 
 def main() -> None:
