@@ -9,6 +9,23 @@ export interface OverlayInsets {
 
 const NO_INSETS: OverlayInsets = { top: 0, right: 0, bottom: 0 }
 
+type Rect = Pick<DOMRect, 'top' | 'left' | 'bottom'>
+
+/**
+ * Converts the panels' viewport rectangles into insets. A window or pane that is still opening can
+ * be narrower than the panel's own margin, which would make an inset negative, and MapLibre throws
+ * on negative padding, unmounting the whole app; so each inset is clamped at 0.
+ */
+export function overlayInsets(width: number, height: number, controls?: Rect, side?: Rect): OverlayInsets {
+  const next = { ...NO_INSETS }
+  next.top = Math.max(0, Math.round(controls?.bottom ?? 0))
+  if (side) {
+    if (side.top > height / 2) next.bottom = Math.max(0, Math.round(height - side.top))
+    else next.right = Math.max(0, Math.round(width - side.left))
+  }
+  return next
+}
+
 /**
  * Measures how much of the map the overlay panels cover: the controls panel takes the top strip,
  * the side panel the right edge, or the bottom edge when the narrow layout moves it there.
@@ -20,14 +37,12 @@ export function useOverlayInsets(controls: HTMLElement | null, side: HTMLElement
   const [insets, setInsets] = useState(NO_INSETS)
   useLayoutEffect(() => {
     const measure = () => {
-      const { innerWidth: width, innerHeight: height } = window
-      const next = { ...NO_INSETS }
-      next.top = Math.round(controls?.getBoundingClientRect().bottom ?? 0)
-      const sideRect = side?.getBoundingClientRect()
-      if (sideRect) {
-        if (sideRect.top > height / 2) next.bottom = Math.round(height - sideRect.top)
-        else next.right = Math.round(width - sideRect.left)
-      }
+      const next = overlayInsets(
+        window.innerWidth,
+        window.innerHeight,
+        controls?.getBoundingClientRect(),
+        side?.getBoundingClientRect(),
+      )
       setInsets((current) =>
         current.top === next.top && current.right === next.right && current.bottom === next.bottom ? current : next,
       )
