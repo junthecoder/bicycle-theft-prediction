@@ -1,0 +1,5 @@
+overrides:
+  # API generator parses YAML; all three 4.2.0 CPU-exhaustion advisories are fixed here.
+  js-yaml: ^4.3.2
+allowBuilds:
+  esbuild: true
