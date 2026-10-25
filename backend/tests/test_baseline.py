@@ -1,9 +1,8 @@
 import unittest
 from datetime import date
 
-from fixtures import dataset
-
 from bicycle_theft.api.data import hour_filter, rate_per_1000
+from fixtures import dataset
 
 
 class BaselineTests(unittest.TestCase):

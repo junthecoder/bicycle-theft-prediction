@@ -2,9 +2,9 @@ import unittest
 from unittest.mock import patch
 
 import polars as pl
-from fixtures import dataset
 
 from bicycle_theft.api.data import area_lookup, load_thefts, match_area
+from fixtures import dataset
 
 
 class AreaMatchingTests(unittest.TestCase):

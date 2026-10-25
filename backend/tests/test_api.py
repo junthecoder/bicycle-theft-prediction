@@ -4,9 +4,9 @@ from pathlib import Path
 from unittest.mock import patch
 
 from fastapi.testclient import TestClient
-from fixtures import dataset
 
 from bicycle_theft.api.app import app
+from fixtures import dataset
 
 
 class ApiTests(unittest.TestCase):
