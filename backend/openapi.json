@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Fukuoka Bicycle Theft API",
-    "version": "0.1.0"
+    "version": "0.1.1"
   },
   "paths": {
     "/api/meta": {
@@ -82,12 +82,13 @@
             "required": false,
             "schema": {
               "type": "integer",
+              "maximum": 1826029,
               "minimum": 1,
-              "description": "Window length in days, ending on `end`",
+              "description": "Window length in days; current and previous windows must fit within years 1–9999",
               "default": 90,
               "title": "Days"
             },
-            "description": "Window length in days, ending on `end`"
+            "description": "Window length in days; current and previous windows must fit within years 1–9999"
           },
           {
             "name": "hour_from",
@@ -163,12 +164,13 @@
             "required": false,
             "schema": {
               "type": "integer",
+              "maximum": 1826029,
               "minimum": 1,
-              "description": "Window length in days, ending on `end`",
+              "description": "Window length in days; current and previous windows must fit within years 1–9999",
               "default": 90,
               "title": "Days"
             },
-            "description": "Window length in days, ending on `end`"
+            "description": "Window length in days; current and previous windows must fit within years 1–9999"
           },
           {
             "name": "hour_from",
@@ -225,6 +227,9 @@
                 }
               }
             }
+          },
+          "404": {
+            "description": "Unknown area"
           },
           "422": {
             "description": "Validation Error",
@@ -299,6 +304,9 @@
                 }
               }
             }
+          },
+          "404": {
+            "description": "Unknown area"
           },
           "422": {
             "description": "Validation Error",

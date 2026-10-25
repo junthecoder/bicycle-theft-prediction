@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
 import { JSDOM } from 'jsdom'
-import { act, createElement } from 'react'
+import { act, createElement, useEffect } from 'react'
 import { createRoot } from 'react-dom/client'
 import { type AsyncState, useAsync } from '../src/hooks/useAsync'
 
@@ -16,13 +16,14 @@ test('disabled requests wait; failures clear on a new key; stale responses canno
   let signal: AbortSignal | undefined
   let resolveOld: (value: string) => void = () => {}
   function Probe({ requestKey }: { requestKey: string | null }) {
-    state = useAsync((s) => {
+    const result = useAsync((s) => {
       calls++
       signal = s
       if (requestKey === 'failure') return Promise.reject(new Error('offline'))
       if (requestKey === 'old') return new Promise((resolve) => { resolveOld = resolve })
       return Promise.resolve('loaded')
     }, requestKey, requestKey === 'new' ? 40 : 0)
+    useEffect(() => { state = result })
     return null
   }
   try {

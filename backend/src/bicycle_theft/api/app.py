@@ -30,7 +30,7 @@ def operation_id(route: APIRoute) -> str:
 
 app = FastAPI(
     title="Fukuoka Bicycle Theft API",
-    version="0.1.0",
+    version="0.1.1",
     lifespan=lifespan,
     generate_unique_id_function=operation_id,
 )
@@ -38,11 +38,21 @@ app = FastAPI(
 
 @app.exception_handler(InvalidWindow)
 async def invalid_window_handler(request: Request, exc: InvalidWindow):
-    return JSONResponse(status_code=422, content={"detail": [{"type": "value_error", "loc": ["query", "days"], "msg": str(exc)}]})
+    return JSONResponse(
+        status_code=422, content={"detail": [{"type": "value_error", "loc": ["query", "days"], "msg": str(exc)}]}
+    )
+
 
 EndDate = Annotated[date, Query(description="Last day of the window (inclusive)")]
 # Bound only by Python's calendar; the frontend can still request all available data.
-Days = Annotated[int, Query(ge=1, le=date.max.toordinal() // 2, description="Window length in days; current and previous windows must fit within years 1–9999")]
+Days = Annotated[
+    int,
+    Query(
+        ge=1,
+        le=date.max.toordinal() // 2,
+        description="Window length in days; current and previous windows must fit within years 1–9999",
+    ),
+]
 HourFrom = Annotated[int, Query(ge=0, le=23)]
 HourTo = Annotated[int, Query(ge=0, le=23, description="Inclusive; smaller than hour_from wraps past midnight")]
 KeyCode = Annotated[str | None, Query(description="町丁目 KEY_CODE; omit for the whole city")]

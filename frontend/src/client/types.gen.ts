@@ -521,7 +521,7 @@ export type GetAreaCountsData = {
         /**
          * Days
          *
-         * Window length in days, ending on `end`
+         * Window length in days; current and previous windows must fit within years 1–9999
          */
         days?: number;
         /**
@@ -569,7 +569,7 @@ export type GetSummaryData = {
         /**
          * Days
          *
-         * Window length in days, ending on `end`
+         * Window length in days; current and previous windows must fit within years 1–9999
          */
         days?: number;
         /**
@@ -593,6 +593,10 @@ export type GetSummaryData = {
 };
 
 export type GetSummaryErrors = {
+    /**
+     * Unknown area
+     */
+    404: unknown;
     /**
      * Validation Error
      */
@@ -635,6 +639,10 @@ export type GetTimelineData = {
 };
 
 export type GetTimelineErrors = {
+    /**
+     * Unknown area
+     */
+    404: unknown;
     /**
      * Validation Error
      */

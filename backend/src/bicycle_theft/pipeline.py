@@ -45,7 +45,7 @@ def parse_types(df: pl.DataFrame) -> pl.DataFrame:
     # 7 or 07. 不明 (unknown) becomes null.
     raw_date = pl.col(DATE_COLUMN)
     # A malformed YYYYMMDD value must not fall through as millions of Excel days.
-    # Bound serials to representable Python dates and exclude compact calendar dates.
+    # Accept the short positive serials used by these files, excluding compact calendar dates.
     serial = raw_date.cast(pl.Int32, strict=False)
     excel_days = pl.when(raw_date.str.contains(r"^\d{1,5}$") & serial.is_between(1, 99_999)).then(serial)
     hour = pl.col(HOUR_COLUMN).cast(pl.Int8, strict=False)

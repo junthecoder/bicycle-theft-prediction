@@ -43,6 +43,5 @@ def main() -> None:
         partial.replace(OUTPUT)
 
 
-
 if __name__ == "__main__":
     main()

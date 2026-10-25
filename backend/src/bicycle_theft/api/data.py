@@ -46,7 +46,7 @@ def area_lookup(areas: pl.DataFrame) -> dict[tuple[str, str], str]:
     # When two areas in a ward share a name (壱岐団地), send thefts to the more populous one.
     ordered = areas.sort(["population", "key_code"], descending=[True, False])
     lookup = {}
-    for ward, name, key in zip(ordered["ward_code"], ordered["name_normalized"], ordered["key_code"]):
+    for ward, name, key in zip(ordered["ward_code"], ordered["name_normalized"], ordered["key_code"], strict=True):
         lookup.setdefault((ward, name), key)
     return lookup
 
@@ -81,7 +81,10 @@ def load_thefts(areas: pl.DataFrame) -> pl.DataFrame:
     lookup = area_lookup(areas)
     pairs = city.select(ward_code=pl.col("city_code").str.slice(0, 5), area_name="area_name").unique()
     pairs = pairs.with_columns(
-        key_code=pl.Series([match_area(lookup, w, n) for w, n in zip(pairs["ward_code"], pairs["area_name"])], dtype=pl.String)
+        key_code=pl.Series(
+            [match_area(lookup, w, n) for w, n in zip(pairs["ward_code"], pairs["area_name"], strict=True)],
+            dtype=pl.String,
+        )
     )
     return (
         city.with_columns(ward_code=pl.col("city_code").str.slice(0, 5))
@@ -156,7 +159,8 @@ class Dataset:
             min_population_for_rate=MIN_POPULATION_FOR_RATE,
             unrecorded_areas=unrecorded["key_code"].to_list(),
             wards=[
-                schemas.Ward(code=code, name=name, population=int(pop), areas=int(n)) for code, name, pop, n in wards.rows()
+                schemas.Ward(code=code, name=name, population=int(pop), areas=int(n))
+                for code, name, pop, n in wards.rows()
             ],
         )
 
@@ -165,7 +169,9 @@ class Dataset:
         # preceding comparison window used by every aggregate endpoint.
         if days < 1 or days > end.toordinal() // 2:
             raise InvalidWindow("current and preceding windows must fit within years 1 through 9999")
-        return schemas.Window(start=end - timedelta(days=days - 1), end=end, days=days, hour_from=hour_from, hour_to=hour_to)
+        return schemas.Window(
+            start=end - timedelta(days=days - 1), end=end, days=days, hour_from=hour_from, hour_to=hour_to
+        )
 
     def in_window(self, window: schemas.Window, shift_back: bool = False) -> pl.DataFrame:
         start, end = window.start, window.end
@@ -180,7 +186,12 @@ class Dataset:
             current.drop_nulls("key_code")
             .group_by("key_code")
             .len("count")
-            .join(previous.drop_nulls("key_code").group_by("key_code").len("prev_count"), on="key_code", how="full", coalesce=True)
+            .join(
+                previous.drop_nulls("key_code").group_by("key_code").len("prev_count"),
+                on="key_code",
+                how="full",
+                coalesce=True,
+            )
             .fill_null(0)
             .join(self.areas.select("key_code", "population"), on="key_code", how="left")
             .sort("key_code")

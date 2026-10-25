@@ -2,6 +2,7 @@ import unittest
 from datetime import date
 
 from fixtures import dataset
+
 from bicycle_theft.api.data import hour_filter, rate_per_1000
 
 

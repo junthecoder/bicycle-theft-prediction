@@ -1,6 +1,6 @@
 [project]
 name = "bicycle-theft-prediction"
-version = "0.1.0"
+version = "0.1.1"
 description = "Predict Bicycle Thefts in Fukuoka"
 requires-python = ">=3.15"
 dependencies = [
@@ -36,3 +36,10 @@ build-backend = "uv_build"
 
 [tool.uv.build-backend]
 module-name = "bicycle_theft"
+
+[tool.ruff]
+line-length = 120
+target-version = "py315"
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "I", "B"]
