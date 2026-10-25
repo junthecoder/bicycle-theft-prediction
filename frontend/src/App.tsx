@@ -34,6 +34,10 @@ function App() {
   const [lockedMax, setLockedMax] = useState<number | null>(null)
   const [playing, setPlaying] = useState(false)
 
+  const [controlsPanel, setControlsPanel] = useState<HTMLDivElement | null>(null)
+  const [sidePanel, setSidePanel] = useState<HTMLDivElement | null>(null)
+  const insets = useOverlayInsets(controlsPanel, sidePanel)
+  const unrecordedAreas = useMemo(() => new Set(meta.data?.unrecorded_areas ?? []), [meta.data])
   // Playback: step the end date forward until the data runs out.
   useEffect(() => {
     if (!playing || !period || !meta.data) return
@@ -115,6 +119,8 @@ function App() {
           areas={areas.data}
           cityOutline={cityOutline.data}
           values={values}
+          unrecordedAreas={unrecordedAreas}
+          insets={insets}
           metric={metric}
           domainMax={domainMax}
           minPopulationForRate={meta.data.min_population_for_rate}
@@ -164,6 +170,7 @@ function App() {
           loading={summary.loading || counts.loading}
           dateMin={meta.data.date_min}
           period={period}
+          unrecordedAreas={unrecordedAreas}
           metric={metric}
           domainMax={domainMax}
           areas={areaProperties}

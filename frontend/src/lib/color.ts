@@ -6,6 +6,8 @@ export const RAMP = ['#ffffb2', '#fecc5c', '#fd8d3c', '#f03b20', '#bd0026']
 export const NA_COLOR = '#c9d1d9'
 /** Areas without thefts keep the basemap visible. */
 export const ZERO_COLOR = 'rgba(255,255,255,0)'
+/** Areas the police never file thefts under (no record in the whole data). */
+export const UNRECORDED_COLOR = '#4b5563'
 
 /** Round up to a "nice" number (1, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10 × 10^n) so legend labels stay readable. */
 export function niceCeil(x: number): number {
@@ -45,12 +47,17 @@ export function colorFor(value: number | null, max: number): string {
   return `rgb(${mix[0]}, ${mix[1]}, ${mix[2]})`
 }
 
-/** Fill colour driven by the `value` feature state: -1 = not applicable, 0 = no thefts, >0 = ramp. */
+/**
+ * Fill colour driven by feature state: `unrecorded` areas are dark grey; otherwise `value`
+ * -1 = not applicable, 0 = no thefts, >0 = ramp.
+ */
 export function fillColorExpression(max: number): ExpressionSpecification {
   const value = ['coalesce', ['feature-state', 'value'], 0]
   const stops = RAMP.flatMap((color, i) => [(max * i) / (RAMP.length - 1), color])
   return [
     'case',
+    ['boolean', ['feature-state', 'unrecorded'], false],
+    UNRECORDED_COLOR,
     ['<', value, 0],
     NA_COLOR,
     ['==', value, 0],

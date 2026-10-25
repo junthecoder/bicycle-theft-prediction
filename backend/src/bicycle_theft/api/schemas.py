@@ -22,6 +22,10 @@ class Meta(BaseModel):
     mapped_thefts: int = Field(description="City records that could be assigned to a 町丁目")
     total_population: int
     min_population_for_rate: int = Field(description="Areas with fewer residents get no per-capita rate")
+    unrecorded_areas: list[str] = Field(
+        description="KEY_CODEs of 町丁目 without a single theft in the whole data; the police evidently "
+        "never file thefts under these names, so the map greys them out"
+    )
     wards: list[Ward]
 
 

@@ -65,6 +65,10 @@ function useOverlayPadding(): PaddingOptions {
   }, [])
   return useMemo(
     () => (narrow ? { bottom: Math.round(window.innerHeight * SIDE_PANEL_HEIGHT_RATIO) } : { right: SIDE_PANEL_PX }),
+  /** KEY_CODEs the police never file thefts under; drawn dark grey instead of by value. */
+  unrecordedAreas: Set<string>
+  /** Screen space covered by the overlay panels (useOverlayInsets). */
+  insets: OverlayInsets
     [narrow],
   )
 }
@@ -121,7 +125,19 @@ function formatValue(value: AreaValue | undefined, metric: Metric): string {
   return value.rate === null ? '—' : value.rate.toFixed(1)
 }
 
-function MapView({ areas, cityOutline, values, metric, domainMax, minPopulationForRate, selectedKey, onSelect, focus }: Props) {
+function MapView({
+  areas,
+  cityOutline,
+  unrecordedAreas,
+  insets,
+  values,
+  metric,
+  domainMax,
+  minPopulationForRate,
+  selectedKey,
+  onSelect,
+  focus,
+}: Props) {
   const mapRef = useRef<MapRef>(null)
   const padding = useOverlayPadding()
   const [sourceReady, setSourceReady] = useState(false)
@@ -143,9 +159,9 @@ function MapView({ areas, cityOutline, values, metric, domainMax, minPopulationF
       if (metric === 'count') state = value?.count ?? 0
       else if (population < minPopulationForRate) state = -1
       else state = value?.rate ?? 0
-      map.setFeatureState({ source: AREAS_SOURCE, id: keyCode }, { value: state })
+      map.setFeatureState({ source: AREAS_SOURCE, id: keyCode }, { value: state, unrecorded: unrecordedAreas.has(keyCode) })
     }
-  }, [areas, values, metric, minPopulationForRate])
+  }, [areas, values, metric, minPopulationForRate, unrecordedAreas])
 
   useEffect(() => {
     if (sourceReady) applyValues()
@@ -210,6 +226,7 @@ function MapView({ areas, cityOutline, values, metric, domainMax, minPopulationF
 
   return (
     <MapGL
+  const hoverUnrecorded = hover ? unrecordedAreas.has(hover.properties.key_code) : false
       ref={mapRef}
       mapStyle={style}
       initialViewState={{ longitude: 130.4, latitude: 33.59, zoom: 11.6, padding }}
@@ -302,11 +319,18 @@ function MapView({ areas, cityOutline, values, metric, domainMax, minPopulationF
             <span className="ward">{hover.properties.ward}</span>
             {hover.properties.name}
           </div>
-          <div className="popup-row">
-            <span>{METRIC_LABELS[metric]}</span>
-            <strong>{formatValue(hoverValue, metric)}</strong>
-          </div>
-          {metric === 'rate' && (
+          {hoverUnrecorded ? (
+            <div className="popup-row">
+              <span>記録対象外</span>
+              <strong>全期間で記録なし</strong>
+            </div>
+          ) : (
+            <div className="popup-row">
+              <span>{METRIC_LABELS[metric]}</span>
+              <strong>{formatValue(hoverValue, metric)}</strong>
+            </div>
+          )}
+          {metric === 'rate' && !hoverUnrecorded && (
             <div className="popup-row">
               <span>件数</span>
               <strong>{hoverValue?.count ?? 0}件</strong>

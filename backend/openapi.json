@@ -620,6 +620,14 @@
             "title": "Min Population For Rate",
             "description": "Areas with fewer residents get no per-capita rate"
           },
+          "unrecorded_areas": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Unrecorded Areas",
+            "description": "KEY_CODEs of 町丁目 without a single theft in the whole data; the police evidently never file thefts under these names, so the map greys them out"
+          },
           "wards": {
             "items": {
               "$ref": "#/components/schemas/Ward"
@@ -637,6 +645,7 @@
           "mapped_thefts",
           "total_population",
           "min_population_for_rate",
+          "unrecorded_areas",
           "wards"
         ],
         "title": "Meta"

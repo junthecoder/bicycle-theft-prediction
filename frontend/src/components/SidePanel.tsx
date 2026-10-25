@@ -13,6 +13,8 @@ interface Props {
   loading: boolean
   /** First recorded day; a previous window that starts before it has nothing to compare against. */
   dateMin: string
+  /** KEY_CODEs the police never file thefts under (see Meta.unrecorded_areas). */
+  unrecordedAreas: Set<string>
   period: Period
   metric: Metric
   domainMax: number
@@ -115,12 +117,14 @@ function Insights({ summary, comparable }: { summary: Summary; comparable: boole
 function SummaryTab({
   summary,
   dateMin,
+  unrecordedAreas,
   period,
   onPickHour,
   onSelectArea,
-}: Pick<Props, 'summary' | 'dateMin' | 'period' | 'onPickHour' | 'onSelectArea'>) {
+}: Pick<Props, 'summary' | 'dateMin' | 'unrecordedAreas' | 'period' | 'onPickHour' | 'onSelectArea'>) {
   if (!summary) return <div className="notice">読み込み中…</div>
   const comparable = hasPreviousWindow(summary, dateMin)
+  const unrecorded = summary.key_code !== null && unrecordedAreas.has(summary.key_code)
   const weekdayValues = WEEKDAYS_MON_FIRST.map((_, i) => summary.by_weekday[i])
   const weekdayLabels = WEEKDAYS_MON_FIRST.map((d) => WEEKDAY_LABELS[d])
   const lockKnown = summary.locked + summary.unlocked
@@ -165,7 +169,13 @@ function SummaryTab({
         </div>
       </div>
 
-      <Insights summary={summary} comparable={comparable} />
+      {unrecorded ? (
+        <div className="notice">
+          この町丁目は記録対象外です。データ全体を通して1件も記録がなく、警察がこの名前で記録していないとみられます。隣接する町丁目を選んでください。
+        </div>
+      ) : (
+        <Insights summary={summary} comparable={comparable} />
+      )}
 
       <div className="section">
         <h3>
@@ -296,7 +306,7 @@ function RankingTab({
   )
 }
 
-function SearchTab({ areas, values, onSelectArea }: Pick<Props, 'areas' | 'values' | 'onSelectArea'>) {
+function SearchTab({ areas, values, unrecordedAreas, onSelectArea }: Pick<Props, 'areas' | 'values' | 'unrecordedAreas' | 'onSelectArea'>) {
   const [query, setQuery] = useState('')
   const normalized = query.normalize('NFKC').trim()
   const results = useMemo(() => {
@@ -324,7 +334,9 @@ function SearchTab({ areas, values, onSelectArea }: Pick<Props, 'areas' | 'value
                 <span className="ward">{area.ward}</span>
                 {area.name}
               </span>
-              <span className="count">{values.get(area.key_code)?.count ?? 0}件</span>
+              <span className="count">
+                {unrecordedAreas.has(area.key_code) ? '記録対象外' : `${values.get(area.key_code)?.count ?? 0}件`}
+              </span>
             </button>
           </li>
         ))}

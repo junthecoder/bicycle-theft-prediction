@@ -246,6 +246,12 @@ export type Meta = {
      */
     min_population_for_rate: number;
     /**
+     * Unrecorded Areas
+     *
+     * KEY_CODEs of 町丁目 without a single theft in the whole data; the police evidently never file thefts under these names, so the map greys them out
+     */
+    unrecorded_areas: Array<string>;
+    /**
      * Wards
      */
     wards: Array<Ward>;

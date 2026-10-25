@@ -129,6 +129,12 @@ class Dataset:
             .agg(pl.col("population").sum(), pl.len().alias("areas"))
             .sort("ward_code")
         )
+        # Judge by name rather than key_code: two census areas can share a name (壱岐団地) and
+        # area_lookup() sends every theft under that name to one of them.
+        recorded_names = self.areas.join(
+            self.thefts.select("key_code").drop_nulls().unique(), on="key_code", how="semi"
+        ).select("ward_code", "name_normalized")
+        unrecorded = self.areas.join(recorded_names, on=["ward_code", "name_normalized"], how="anti")
         return schemas.Meta(
             date_min=SLIDER_START,
             date_max=self.thefts["date"].max(),
@@ -137,6 +143,7 @@ class Dataset:
             mapped_thefts=int(self.thefts["key_code"].is_not_null().sum()),
             total_population=self.population_of(None),
             min_population_for_rate=MIN_POPULATION_FOR_RATE,
+            unrecorded_areas=unrecorded["key_code"].to_list(),
             wards=[
                 schemas.Ward(code=code, name=name, population=int(pop), areas=int(n)) for code, name, pop, n in wards.rows()
             ],
