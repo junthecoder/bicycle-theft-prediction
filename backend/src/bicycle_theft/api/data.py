@@ -40,11 +40,11 @@ RAW_COLUMNS = {
 
 def area_lookup(areas: pl.DataFrame) -> dict[tuple[str, str], str]:
     # When two areas in a ward share a name (壱岐団地), send thefts to the more populous one.
-    ordered = areas.sort("population", descending=True)
-    return {
-        (ward, name): key
-        for ward, name, key in zip(ordered["ward_code"], ordered["name_normalized"], ordered["key_code"])
-    }
+    ordered = areas.sort(["population", "key_code"], descending=[True, False])
+    lookup = {}
+    for ward, name, key in zip(ordered["ward_code"], ordered["name_normalized"], ordered["key_code"]):
+        lookup.setdefault((ward, name), key)
+    return lookup
 
 
 def match_area(lookup: dict[tuple[str, str], str], ward_code: str, name: str | None) -> str | None:
@@ -57,7 +57,7 @@ def match_area(lookup: dict[tuple[str, str], str], ward_code: str, name: str | N
     stripped = CHOME_PATTERN.sub("", normalized)
     if stripped != normalized:
         candidates.append(stripped)
-    candidates.append(f"大字{normalized}")
+    candidates.extend(f"大字{candidate}" for candidate in list(candidates))
     for candidate in candidates:
         if (ward_code, candidate) in lookup:
             return lookup[(ward_code, candidate)]
