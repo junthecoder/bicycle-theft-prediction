@@ -4,7 +4,7 @@ import Legend from './components/Legend'
 import SidePanel from './components/SidePanel'
 import TimeControls from './components/TimeControls'
 import { useAsync } from './hooks/useAsync'
-import { fetchAreaCounts, fetchAreas, fetchMeta, fetchSummary, fetchTimeline } from './lib/api'
+import { fetchAreaCounts, fetchAreas, fetchCityOutline, fetchMeta, fetchSummary, fetchTimeline } from './lib/api'
 import { robustMax } from './lib/color'
 import { addDays } from './lib/date'
 import { type Metric, type Period, periodKey } from './lib/period'
@@ -18,6 +18,7 @@ const PLAY_INTERVAL_MS = 250
 function App() {
   const meta = useAsync(fetchMeta, 'meta')
   const areas = useAsync(fetchAreas, 'areas')
+  const cityOutline = useAsync(fetchCityOutline, 'city-outline')
 
   // Until the user touches the controls, the period is derived from the data's last date.
   const [chosenPeriod, setPeriod] = useState<Period | null>(null)
@@ -112,6 +113,7 @@ function App() {
       <div className="map-container">
         <MapView
           areas={areas.data}
+          cityOutline={cityOutline.data}
           values={values}
           metric={metric}
           domainMax={domainMax}

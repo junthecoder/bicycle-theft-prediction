@@ -1,5 +1,5 @@
 import type { FeatureCollection, Geometry } from 'geojson'
-import { addProtocol, setWorkerUrl, type StyleSpecification } from 'maplibre-gl'
+import { addProtocol, type PaddingOptions, setWorkerUrl, type StyleSpecification } from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
 // MapLibre 6 locates its worker relative to import.meta.url at runtime, which a bundled build
 // can't satisfy; let Vite bundle the worker and hand MapLibre the resulting URL.
@@ -17,7 +17,7 @@ import MapGL, {
   type MapSourceDataEvent,
 } from 'react-map-gl/maplibre'
 import baseStyle from './basemap-style.json'
-import type { AreaFeatureCollection, AreaProperties } from './client'
+import type { AreaFeatureCollection, AreaProperties, CityOutlineFeatureCollection } from './client'
 import { fillColorExpression } from './lib/color'
 import { METRIC_LABELS, type Metric } from './lib/period'
 
@@ -32,8 +32,42 @@ const style = baseStyle as unknown as StyleSpecification
 // Draw the choropleth under the basemap's text so place names stay legible.
 const FIRST_SYMBOL_LAYER = style.layers.find((layer) => layer.type === 'symbol')?.id
 const AREAS_SOURCE = 'areas'
-// A margin around the PMTiles extract so users can't pan into empty tiles.
-const FUKUOKA_BOUNDS: Bounds = [129.85, 33.3, 130.7, 34.0]
+const CITY_SOURCE = 'city'
+// Extent of the city proper: the mainland, 志賀島 and 玄界島. 小呂島 lies another 20 km out to sea
+// (130.03, 33.87) and would push the pannable area far to the west, so it is left out.
+const CITY_EXTENT: Bounds = [130.198, 33.426, 130.495, 33.713]
+// Pannable margin around the city, the same distance on every side. Keep it below MARGIN_KM in
+// backend download_pmtiles.py so the basemap extract covers everything the map can show.
+const VIEW_MARGIN_KM = 8
+const KM_PER_DEGREE_LAT = 111.32
+// Width of .overlay.right plus its gaps (App.css); below the breakpoint the panel moves to the
+// bottom and takes 42vh. The map keeps the city balanced within the part it leaves visible.
+const SIDE_PANEL_PX = 360 + 12 * 2
+const SIDE_PANEL_HEIGHT_RATIO = 0.42
+const NARROW_LAYOUT = '(max-width: 760px)'
+
+function padBounds([west, south, east, north]: Bounds, km: number): Bounds {
+  const dLat = km / KM_PER_DEGREE_LAT
+  const dLng = dLat / Math.cos(((south + north) / 2) * (Math.PI / 180))
+  return [west - dLng, south - dLat, east + dLng, north + dLat]
+}
+
+const MAX_BOUNDS = padBounds(CITY_EXTENT, VIEW_MARGIN_KM)
+
+/** Padding that keeps the overlay panel out of the map's notion of its viewport (bounds and fitBounds). */
+function useOverlayPadding(): PaddingOptions {
+  const [narrow, setNarrow] = useState(() => window.matchMedia(NARROW_LAYOUT).matches)
+  useEffect(() => {
+    const query = window.matchMedia(NARROW_LAYOUT)
+    const update = () => setNarrow(query.matches)
+    query.addEventListener('change', update)
+    return () => query.removeEventListener('change', update)
+  }, [])
+  return useMemo(
+    () => (narrow ? { bottom: Math.round(window.innerHeight * SIDE_PANEL_HEIGHT_RATIO) } : { right: SIDE_PANEL_PX }),
+    [narrow],
+  )
+}
 
 export interface AreaValue {
   count: number
@@ -43,6 +77,7 @@ export interface AreaValue {
 
 interface Props {
   areas: AreaFeatureCollection | undefined
+  cityOutline: CityOutlineFeatureCollection | undefined
   values: Map<string, AreaValue>
   metric: Metric
   domainMax: number
@@ -86,8 +121,9 @@ function formatValue(value: AreaValue | undefined, metric: Metric): string {
   return value.rate === null ? '—' : value.rate.toFixed(1)
 }
 
-function MapView({ areas, values, metric, domainMax, minPopulationForRate, selectedKey, onSelect, focus }: Props) {
+function MapView({ areas, cityOutline, values, metric, domainMax, minPopulationForRate, selectedKey, onSelect, focus }: Props) {
   const mapRef = useRef<MapRef>(null)
+  const padding = useOverlayPadding()
   const [sourceReady, setSourceReady] = useState(false)
   const [hover, setHover] = useState<Hover | null>(null)
   const hoveredKeyRef = useRef<string | null>(null)
@@ -130,7 +166,7 @@ function MapView({ areas, values, metric, domainMax, minPopulationForRate, selec
     if (!map || !focus || !areas) return
     const feature = areas.features.find((f) => f.properties.key_code === focus.keyCode)
     if (!feature) return
-    map.fitBounds(geometryBounds(feature.geometry as unknown as Geometry), { padding: 80, maxZoom: 16, duration: 800 })
+    map.fitBounds(geometryBounds(feature.geometry as unknown as Geometry), { padding: 60, maxZoom: 16, duration: 800 })
   }, [focus, areas])
 
   const setHovered = (keyCode: string | null) => {
@@ -176,10 +212,11 @@ function MapView({ areas, values, metric, domainMax, minPopulationForRate, selec
     <MapGL
       ref={mapRef}
       mapStyle={style}
-      initialViewState={{ longitude: 130.4, latitude: 33.59, zoom: 11.6 }}
+      initialViewState={{ longitude: 130.4, latitude: 33.59, zoom: 11.6, padding }}
+      padding={padding}
       minZoom={9.5}
       maxZoom={17}
-      maxBounds={FUKUOKA_BOUNDS}
+      maxBounds={MAX_BOUNDS}
       style={{ width: '100%', height: '100%' }}
       interactiveLayerIds={['areas-fill']}
       cursor={hover ? 'pointer' : 'grab'}
@@ -232,6 +269,22 @@ function MapView({ areas, values, metric, domainMax, minPopulationForRate, selec
               'text-max-width': 6,
             }}
             paint={{ 'text-color': '#1f2937', 'text-halo-color': 'rgba(255,255,255,0.9)', 'text-halo-width': 1.2 }}
+          />
+        </Source>
+      )}
+      {cityOutline && (
+        <Source id={CITY_SOURCE} type="geojson" data={cityOutline as unknown as FeatureCollection}>
+          {/* The edge of the recorded area: thefts outside this line are not in the data. */}
+          <Layer
+            id="city-outline"
+            type="line"
+            beforeId={FIRST_SYMBOL_LAYER}
+            layout={{ 'line-join': 'round' }}
+            paint={{
+              'line-color': '#1f2937',
+              'line-width': ['interpolate', ['linear'], ['zoom'], 10, 1.5, 13, 3, 16, 5],
+              'line-opacity': 0.85,
+            }}
           />
         </Source>
       )}

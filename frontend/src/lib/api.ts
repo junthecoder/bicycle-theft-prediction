@@ -1,5 +1,5 @@
-import type { AreaCounts, AreaFeatureCollection, Meta, Summary, Timeline } from '../client'
-import { getAreaCounts, getAreas, getMeta, getSummary, getTimeline } from '../client'
+import type { AreaCounts, AreaFeatureCollection, CityOutlineFeatureCollection, Meta, Summary, Timeline } from '../client'
+import { getAreaCounts, getAreas, getCityOutline, getMeta, getSummary, getTimeline } from '../client'
 import { hourRange, type Period, windowDays } from './period'
 
 // Thin wrappers over the generated SDK: throw on HTTP errors and return the payload directly.
@@ -17,6 +17,11 @@ export async function fetchMeta(signal?: AbortSignal): Promise<Meta> {
 
 export async function fetchAreas(signal?: AbortSignal): Promise<AreaFeatureCollection> {
   const { data } = await getAreas({ signal, throwOnError: true })
+  return data
+}
+
+export async function fetchCityOutline(signal?: AbortSignal): Promise<CityOutlineFeatureCollection> {
+  const { data } = await getCityOutline({ signal, throwOnError: true })
   return data
 }
 
