@@ -10,6 +10,9 @@ from bicycle_theft.paths import RAW_DIR
 OUTPUT = RAW_DIR / "fukuoka.pmtiles"
 BUILDS_URL = "https://build-metadata.protomaps.dev/builds.json"
 BUILD_URL = "https://build.protomaps.com/{key}"
+# Basemap beyond the census extent, so the surroundings render up to the pannable bounds the map
+# allows (VIEW_MARGIN_KM in frontend/src/Map.tsx, which must stay smaller than this).
+MARGIN_KM = 12
 
 
 def latest_build_key() -> str:
@@ -21,18 +24,21 @@ def latest_build_key() -> str:
 
 def main() -> None:
     key = latest_build_key()
-    bbox = census_bbox()
+    bbox = census_bbox(margin_km=MARGIN_KM)
+    # Extract next to the target and swap at the end, so a failed download keeps the old basemap.
+    partial = OUTPUT.with_suffix(".pmtiles.part")
     print(f"extracting {bbox} from {key} into {OUTPUT}")
     subprocess.run(
         [
             "pmtiles",
             "extract",
             BUILD_URL.format(key=key),
-            str(OUTPUT),
+            str(partial),
             f"--bbox={bbox}",
         ],
         check=True,
     )
+    partial.replace(OUTPUT)
 
 
 if __name__ == "__main__":
