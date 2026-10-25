@@ -55,17 +55,17 @@ function App() {
     return () => clearInterval(timer)
   }, [playing, period, meta.data])
 
-  const key = period ? periodKey(period) : ''
+  const key = period && dateMin ? periodKey(period) : null
   const noPeriod = () => Promise.reject(new Error('no period'))
   const counts = useAsync((signal) => (period && dateMin ? fetchAreaCounts(period, dateMin, signal) : noPeriod()), key, FETCH_DELAY_MS)
   const summary = useAsync(
     (signal) => (period && dateMin ? fetchSummary(period, dateMin, selectedKey, signal) : noPeriod()),
-    `${key}|${selectedKey ?? ''}`,
+    key === null ? null : `${key}|${selectedKey ?? ''}`,
     FETCH_DELAY_MS,
   )
   const timeline = useAsync(
     (signal) => (period ? fetchTimeline(period, null, signal) : noPeriod()),
-    period ? `${period.hourFrom}|${period.hourSpan}` : '',
+    period ? `${period.hourFrom}|${period.hourSpan}` : null,
     FETCH_DELAY_MS,
   )
 
@@ -97,7 +97,7 @@ function App() {
     setLockedMax(null) // the scale of one metric is meaningless for the other
   }
 
-  const error = meta.error ?? areas.error ?? counts.error
+  const error = meta.error ?? areas.error ?? cityOutline.error ?? counts.error ?? summary.error ?? timeline.error
   if (error) {
     return (
       <div className="status">
