@@ -608,7 +608,7 @@
 }
 
 /* Keep MapLibre's own controls clear of the side panel */
-.maplibregl-ctrl-bottom-right {
+.app .maplibregl-ctrl-bottom-right {
   right: 372px;
 }
 

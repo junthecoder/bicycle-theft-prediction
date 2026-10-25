@@ -61,7 +61,17 @@ function peakHours(byHour: number[]): { from: number; count: number } | null {
   return best
 }
 
+// Below this many thefts, percentages say nothing; ask for a longer window instead.
+const MIN_THEFTS_FOR_INSIGHTS = 10
+
 function Insights({ summary }: { summary: Summary }) {
+  if (summary.total < MIN_THEFTS_FOR_INSIGHTS) {
+    return (
+      <div className="notice">
+        この期間・時間帯の件数は{summary.total}件です。傾向を見るには集計期間を長くするか、時間帯を「終日」にしてください。
+      </div>
+    )
+  }
   const items: string[] = []
   const peak = peakHours(summary.by_hour)
   const knownHours = summary.total - summary.unknown_hour
@@ -141,7 +151,7 @@ function SummaryTab({
           <div className="label">千人あたり</div>
           <div className="value">
             {summary.rate === null ? '—' : summary.rate.toFixed(1)}
-            <small>件</small>
+            {summary.rate !== null && <small>件</small>}
           </div>
         </div>
       </div>
