@@ -59,7 +59,7 @@
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
-  gap: 10px;
+  gap: 0 10px;
   padding: 12px 14px 0;
 }
 

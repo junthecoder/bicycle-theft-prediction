@@ -4,6 +4,7 @@ import Legend from './components/Legend'
 import SidePanel from './components/SidePanel'
 import TimeControls from './components/TimeControls'
 import { useAsync } from './hooks/useAsync'
+import { useOverlayInsets } from './hooks/useOverlayInsets'
 import { fetchAreaCounts, fetchAreas, fetchCityOutline, fetchMeta, fetchSummary, fetchTimeline } from './lib/api'
 import { robustMax } from './lib/color'
 import { addDays } from './lib/date'
@@ -33,11 +34,11 @@ function App() {
   const [focus, setFocus] = useState<{ keyCode: string; nonce: number } | null>(null)
   const [lockedMax, setLockedMax] = useState<number | null>(null)
   const [playing, setPlaying] = useState(false)
-
   const [controlsPanel, setControlsPanel] = useState<HTMLDivElement | null>(null)
   const [sidePanel, setSidePanel] = useState<HTMLDivElement | null>(null)
   const insets = useOverlayInsets(controlsPanel, sidePanel)
   const unrecordedAreas = useMemo(() => new Set(meta.data?.unrecorded_areas ?? []), [meta.data])
+
   // Playback: step the end date forward until the data runs out.
   useEffect(() => {
     if (!playing || !period || !meta.data) return
@@ -118,9 +119,9 @@ function App() {
         <MapView
           areas={areas.data}
           cityOutline={cityOutline.data}
-          values={values}
           unrecordedAreas={unrecordedAreas}
           insets={insets}
+          values={values}
           metric={metric}
           domainMax={domainMax}
           minPopulationForRate={meta.data.min_population_for_rate}
@@ -130,7 +131,7 @@ function App() {
         />
       </div>
 
-      <div className="overlay top-left">
+      <div className="overlay top-left" ref={setControlsPanel}>
         <div className="panel">
           <div className="header">
             <h1>福岡市 自転車盗難 ホットスポット</h1>
@@ -164,13 +165,13 @@ function App() {
         />
       </div>
 
-      <div className="overlay right">
+      <div className="overlay right" ref={setSidePanel}>
         <SidePanel
           summary={summary.data}
           loading={summary.loading || counts.loading}
           dateMin={meta.data.date_min}
-          period={period}
           unrecordedAreas={unrecordedAreas}
+          period={period}
           metric={metric}
           domainMax={domainMax}
           areas={areaProperties}

@@ -1,5 +1,5 @@
 import type { FeatureCollection, Geometry } from 'geojson'
-import { addProtocol, type PaddingOptions, setWorkerUrl, type StyleSpecification } from 'maplibre-gl'
+import { addProtocol, setWorkerUrl, type StyleSpecification } from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
 // MapLibre 6 locates its worker relative to import.meta.url at runtime, which a bundled build
 // can't satisfy; let Vite bundle the worker and hand MapLibre the resulting URL.
@@ -18,6 +18,7 @@ import MapGL, {
 } from 'react-map-gl/maplibre'
 import baseStyle from './basemap-style.json'
 import type { AreaFeatureCollection, AreaProperties, CityOutlineFeatureCollection } from './client'
+import type { OverlayInsets } from './hooks/useOverlayInsets'
 import { fillColorExpression } from './lib/color'
 import { METRIC_LABELS, type Metric } from './lib/period'
 
@@ -40,12 +41,6 @@ const CITY_EXTENT: Bounds = [130.198, 33.426, 130.495, 33.713]
 // backend download_pmtiles.py so the basemap extract covers everything the map can show.
 const VIEW_MARGIN_KM = 8
 const KM_PER_DEGREE_LAT = 111.32
-// Width of .overlay.right plus its gaps (App.css); below the breakpoint the panel moves to the
-// bottom and takes 42vh. The map keeps the city balanced within the part it leaves visible.
-const SIDE_PANEL_PX = 360 + 12 * 2
-const SIDE_PANEL_HEIGHT_RATIO = 0.42
-const NARROW_LAYOUT = '(max-width: 760px)'
-
 function padBounds([west, south, east, north]: Bounds, km: number): Bounds {
   const dLat = km / KM_PER_DEGREE_LAT
   const dLng = dLat / Math.cos(((south + north) / 2) * (Math.PI / 180))
@@ -53,24 +48,12 @@ function padBounds([west, south, east, north]: Bounds, km: number): Bounds {
 }
 
 const MAX_BOUNDS = padBounds(CITY_EXTENT, VIEW_MARGIN_KM)
+// Web Mercator: the world is 512 px wide at zoom 0.
+const EARTH_CIRCUMFERENCE_M = 40_075_016.686
+const WORLD_PX_AT_ZOOM_0 = 512
 
-/** Padding that keeps the overlay panel out of the map's notion of its viewport (bounds and fitBounds). */
-function useOverlayPadding(): PaddingOptions {
-  const [narrow, setNarrow] = useState(() => window.matchMedia(NARROW_LAYOUT).matches)
-  useEffect(() => {
-    const query = window.matchMedia(NARROW_LAYOUT)
-    const update = () => setNarrow(query.matches)
-    query.addEventListener('change', update)
-    return () => query.removeEventListener('change', update)
-  }, [])
-  return useMemo(
-    () => (narrow ? { bottom: Math.round(window.innerHeight * SIDE_PANEL_HEIGHT_RATIO) } : { right: SIDE_PANEL_PX }),
-  /** KEY_CODEs the police never file thefts under; drawn dark grey instead of by value. */
-  unrecordedAreas: Set<string>
-  /** Screen space covered by the overlay panels (useOverlayInsets). */
-  insets: OverlayInsets
-    [narrow],
-  )
+function metersPerPixel(latitude: number, zoom: number): number {
+  return (EARTH_CIRCUMFERENCE_M * Math.cos(latitude * (Math.PI / 180))) / (WORLD_PX_AT_ZOOM_0 * 2 ** zoom)
 }
 
 export interface AreaValue {
@@ -82,6 +65,10 @@ export interface AreaValue {
 interface Props {
   areas: AreaFeatureCollection | undefined
   cityOutline: CityOutlineFeatureCollection | undefined
+  /** KEY_CODEs the police never file thefts under; drawn dark grey instead of by value. */
+  unrecordedAreas: Set<string>
+  /** Screen space covered by the overlay panels (useOverlayInsets). */
+  insets: OverlayInsets
   values: Map<string, AreaValue>
   metric: Metric
   domainMax: number
@@ -139,13 +126,29 @@ function MapView({
   focus,
 }: Props) {
   const mapRef = useRef<MapRef>(null)
-  const padding = useOverlayPadding()
   const [sourceReady, setSourceReady] = useState(false)
   const [hover, setHover] = useState<Hover | null>(null)
   const hoveredKeyRef = useRef<string | null>(null)
   const selectedKeyRef = useRef<string | null>(null)
 
   const fillColor = useMemo(() => fillColorExpression(domainMax), [domainMax])
+
+  // The side panel is map padding, so bounds and fitBounds work with the part of the map it leaves
+  // visible. The controls panel is not: padding there would raise the minimum zoom until the city
+  // fits beneath it. Instead the north bound grows by the panel's height at the current zoom, so
+  // the map can be dragged down from under the panel while staying fully zoomed out.
+  const padding = useMemo(
+    () => ({ top: 0, left: 0, right: insets.right, bottom: insets.bottom }),
+    [insets.right, insets.bottom],
+  )
+  const constrainToCity = useCallback(() => {
+    const map = mapRef.current?.getMap()
+    if (!map) return
+    const [west, south, east, north] = MAX_BOUNDS
+    const extraNorthKm = (insets.top * metersPerPixel(north, map.getZoom())) / 1000
+    map.setMaxBounds([west, south, east, north + extraNorthKm / KM_PER_DEGREE_LAT])
+  }, [insets.top])
+  useEffect(constrainToCity, [constrainToCity])
 
   // Push the current metric into feature state instead of re-uploading the GeoJSON on every
   // slider move; the fill layer reads it back through fillColorExpression.
@@ -223,17 +226,18 @@ function MapView({
   }
 
   const hoverValue = hover ? values.get(hover.properties.key_code) : undefined
+  const hoverUnrecorded = hover ? unrecordedAreas.has(hover.properties.key_code) : false
 
   return (
     <MapGL
-  const hoverUnrecorded = hover ? unrecordedAreas.has(hover.properties.key_code) : false
       ref={mapRef}
       mapStyle={style}
-      initialViewState={{ longitude: 130.4, latitude: 33.59, zoom: 11.6, padding }}
+      initialViewState={{ longitude: 130.4, latitude: 33.59, zoom: 11.6 }}
       padding={padding}
       minZoom={9.5}
       maxZoom={17}
-      maxBounds={MAX_BOUNDS}
+      onLoad={constrainToCity}
+      onZoom={constrainToCity}
       style={{ width: '100%', height: '100%' }}
       interactiveLayerIds={['areas-fill']}
       cursor={hover ? 'pointer' : 'grab'}
