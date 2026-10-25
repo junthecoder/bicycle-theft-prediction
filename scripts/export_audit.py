@@ -53,9 +53,7 @@ def main():
         if item["sources"]:
             lines += [
                 "",
-                "Sources: "
-                + ", ".join(f"[advisory]({url})" for url in item["sources"])
-                + ".",
+                "Sources: " + ", ".join(f"[advisory]({url})" for url in item["sources"]) + ".",
             ]
     for field in ["assumptions", "limitations", "recommendations"]:
         lines += ["", f"## {field.title()}", ""]
@@ -65,10 +63,7 @@ def main():
         writer = csv.DictWriter(stream, fieldnames=list(findings[0]), lineterminator="\n")
         writer.writeheader()
         writer.writerows(
-            {
-                key: "; ".join(value) if isinstance(value, list) else value
-                for key, value in item.items()
-            }
+            {key: "; ".join(value) if isinstance(value, list) else value for key, value in item.items()}
             for item in findings
         )
     print(f"Exported {len(findings)} findings: {dict(counts)}")
