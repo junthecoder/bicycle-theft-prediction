@@ -216,10 +216,85 @@
   color: var(--accent);
 }
 
-.hour-sliders {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
+/* Two native range inputs stacked on one track; only the thumbs take pointer events. */
+.range-slider {
+  position: relative;
+  height: 22px;
+  margin: 2px 0 14px;
+}
+
+.range-slider .track,
+.range-slider .fill {
+  position: absolute;
+  top: 50%;
+  height: 4px;
+  border-radius: 2px;
+  transform: translateY(-50%);
+}
+
+.range-slider .track {
+  left: 0;
+  right: 0;
+  background: var(--border);
+}
+
+.range-slider .fill {
+  background: var(--accent);
+}
+
+.range-slider input[type='range'] {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  margin: 0;
+  appearance: none;
+  background: transparent;
+  pointer-events: none;
+}
+
+.range-slider input[type='range']::-webkit-slider-thumb {
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #fff;
+  border: 2px solid var(--accent);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+  pointer-events: auto;
+  cursor: grab;
+}
+
+.range-slider input[type='range']::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #fff;
+  border: 2px solid var(--accent);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+  pointer-events: auto;
+  cursor: grab;
+}
+
+.range-slider input[type='range']:focus-visible {
+  outline: none;
+}
+
+.range-slider input[type='range']:focus-visible::-webkit-slider-thumb {
+  box-shadow: 0 0 0 3px var(--accent-bg);
+}
+
+.range-slider .ticks {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.range-slider .ticks span {
+  position: absolute;
+  transform: translateX(-50%);
 }
 
 /* Legend */

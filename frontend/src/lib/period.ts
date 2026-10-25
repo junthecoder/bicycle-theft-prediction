@@ -24,12 +24,14 @@ export const WINDOW_OPTIONS: { days: number; label: string }[] = [
   { days: 365, label: '1年' },
 ]
 
+// Labels use the same exclusive end hour as `formatHourBand` and the slider's end thumb; the
+// four bands tile the whole day.
 export const HOUR_PRESETS: { label: string; hourFrom: number; hourSpan: number }[] = [
   { label: '終日', hourFrom: 0, hourSpan: 24 },
-  { label: '朝 6–9時', hourFrom: 6, hourSpan: 4 },
-  { label: '昼 10–16時', hourFrom: 10, hourSpan: 7 },
-  { label: '夕方 17–21時', hourFrom: 17, hourSpan: 5 },
-  { label: '深夜 22–5時', hourFrom: 22, hourSpan: 8 },
+  { label: '朝 6–10時', hourFrom: 6, hourSpan: 4 },
+  { label: '昼 10–17時', hourFrom: 10, hourSpan: 7 },
+  { label: '夕方 17–22時', hourFrom: 17, hourSpan: 5 },
+  { label: '深夜 22–6時', hourFrom: 22, hourSpan: 8 },
 ]
 
 export function isFullDay(period: Period): boolean {
@@ -56,6 +58,17 @@ export function formatHourBand(period: Period): string {
   const { hourFrom, hourTo: to } = hourRange(period)
   const endLabel = to + 1 === 24 ? '24時' : `${to + 1}時`
   return `${hourFrom}時〜${endLabel}${to < hourFrom ? '（翌日）' : ''}`
+}
+
+/** The band as two positions on a 0–24 slider; `end` sits left of `start` when the band wraps midnight. */
+export function hourThumbs(period: Period): { start: number; end: number } {
+  const end = period.hourFrom + period.hourSpan
+  return { start: period.hourFrom, end: end > 24 ? end - 24 : end }
+}
+
+/** Inverse of `hourThumbs`. Equal thumbs mean the whole day rather than an empty band. */
+export function periodFromThumbs(start: number, end: number): Pick<Period, 'hourFrom' | 'hourSpan'> {
+  return { hourFrom: start, hourSpan: end > start ? end - start : end + 24 - start }
 }
 
 export function periodKey(period: Period): string {

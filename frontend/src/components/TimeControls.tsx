@@ -2,6 +2,7 @@ import type { TimelinePoint } from '../client'
 import { addDays, daysBetween, formatShortDate } from '../lib/date'
 import { formatHourBand, HOUR_PRESETS, isFullDay, type Period, WINDOW_OPTIONS } from '../lib/period'
 import DateLabel from './DateLabel'
+import HourRangeSlider from './HourRangeSlider'
 
 interface Props {
   dateMin: string
@@ -141,37 +142,7 @@ function TimeControls({ dateMin, dateMax, period, onChange, timeline, playing, o
             )
           })}
         </div>
-        <div className="hour-sliders">
-          <label className="field">
-            <span className="field-label">
-              <span>開始</span>
-              <strong>{period.hourFrom}時</strong>
-            </span>
-            <input
-              className="slider"
-              type="range"
-              min={0}
-              max={23}
-              value={period.hourFrom}
-              disabled={isFullDay(period)}
-              onChange={(e) => onChange({ ...period, hourFrom: Number(e.target.value) })}
-            />
-          </label>
-          <label className="field">
-            <span className="field-label">
-              <span>長さ</span>
-              <strong>{period.hourSpan}時間</strong>
-            </span>
-            <input
-              className="slider"
-              type="range"
-              min={1}
-              max={24}
-              value={period.hourSpan}
-              onChange={(e) => onChange({ ...period, hourSpan: Number(e.target.value) })}
-            />
-          </label>
-        </div>
+        <HourRangeSlider period={period} onChange={(band) => onChange({ ...period, ...band })} />
       </div>
     </div>
   )
