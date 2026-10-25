@@ -9,15 +9,13 @@ dependencies = [
     "polars>=2.0.0",
     "geopandas>=1.2.0",
     "matplotlib>=3.11.2",
-    "ipykernel>=7.4.0",
     "dlt>=1.31.0",
     "pyarrow>=26.0.0",
-    "pmtiles>=3.8.1",
 ]
 
 [dependency-groups]
 dev = [
-    "ipython>=9.17.1",
+    "ipykernel>=7.4.0",
 ]
 
 [project.scripts]
