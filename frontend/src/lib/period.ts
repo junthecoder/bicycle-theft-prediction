@@ -1,8 +1,13 @@
+import { addDays, daysBetween } from './date'
+
+/** A window length in days, or everything since the first recorded day. */
+export type WindowLength = number | 'all'
+
 /** The time selection shared by every panel: a window of `days` ending on `end`, restricted to a band of hours. */
 export interface Period {
   /** YYYY-MM-DD, inclusive last day of the window */
   end: string
-  days: number
+  days: WindowLength
   /** First hour of the band, 0–23 */
   hourFrom: number
   /** Length of the band in hours, 1–24; 24 means the whole day */
@@ -16,13 +21,24 @@ export const METRIC_LABELS: Record<Metric, string> = {
   rate: '人口千人あたり',
 }
 
-export const WINDOW_OPTIONS: { days: number; label: string }[] = [
+export const WINDOW_OPTIONS: { days: WindowLength; label: string }[] = [
   { days: 1, label: '1日' },
   { days: 7, label: '7日' },
   { days: 30, label: '30日' },
   { days: 90, label: '90日' },
   { days: 365, label: '1年' },
+  { days: 'all', label: '全期間' },
 ]
+
+/** The window length in days; 全期間 runs from the first recorded day (`dateMin`) to `end`. */
+export function windowDays(period: Period, dateMin: string): number {
+  return period.days === 'all' ? daysBetween(dateMin, period.end) + 1 : period.days
+}
+
+/** Inclusive first day of the window. */
+export function windowStart(period: Period, dateMin: string): string {
+  return addDays(period.end, 1 - windowDays(period, dateMin))
+}
 
 // Labels use the same exclusive end hour as `formatHourBand` and the slider's end thumb; the
 // four bands tile the whole day.

@@ -1,12 +1,13 @@
 import type { AreaCounts, AreaFeatureCollection, Meta, Summary, Timeline } from '../client'
 import { getAreaCounts, getAreas, getMeta, getSummary, getTimeline } from '../client'
-import { hourRange, type Period } from './period'
+import { hourRange, type Period, windowDays } from './period'
 
 // Thin wrappers over the generated SDK: throw on HTTP errors and return the payload directly.
+// `dateMin` (from /api/meta) resolves the 全期間 window into a day count.
 
-function windowQuery(period: Period) {
+function windowQuery(period: Period, dateMin: string) {
   const { hourFrom, hourTo } = hourRange(period)
-  return { end: period.end, days: period.days, hour_from: hourFrom, hour_to: hourTo }
+  return { end: period.end, days: windowDays(period, dateMin), hour_from: hourFrom, hour_to: hourTo }
 }
 
 export async function fetchMeta(signal?: AbortSignal): Promise<Meta> {
@@ -19,14 +20,19 @@ export async function fetchAreas(signal?: AbortSignal): Promise<AreaFeatureColle
   return data
 }
 
-export async function fetchAreaCounts(period: Period, signal?: AbortSignal): Promise<AreaCounts> {
-  const { data } = await getAreaCounts({ query: windowQuery(period), signal, throwOnError: true })
+export async function fetchAreaCounts(period: Period, dateMin: string, signal?: AbortSignal): Promise<AreaCounts> {
+  const { data } = await getAreaCounts({ query: windowQuery(period, dateMin), signal, throwOnError: true })
   return data
 }
 
-export async function fetchSummary(period: Period, keyCode: string | null, signal?: AbortSignal): Promise<Summary> {
+export async function fetchSummary(
+  period: Period,
+  dateMin: string,
+  keyCode: string | null,
+  signal?: AbortSignal,
+): Promise<Summary> {
   const { data } = await getSummary({
-    query: { ...windowQuery(period), key_code: keyCode ?? undefined },
+    query: { ...windowQuery(period, dateMin), key_code: keyCode ?? undefined },
     signal,
     throwOnError: true,
   })

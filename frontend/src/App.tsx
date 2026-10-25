@@ -21,6 +21,7 @@ function App() {
 
   // Until the user touches the controls, the period is derived from the data's last date.
   const [chosenPeriod, setPeriod] = useState<Period | null>(null)
+  const dateMin = meta.data?.date_min
   const dateMax = meta.data?.date_max
   const period = useMemo<Period | null>(
     () => chosenPeriod ?? (dateMax ? { end: dateMax, days: DEFAULT_DAYS, hourFrom: 0, hourSpan: 24 } : null),
@@ -36,7 +37,7 @@ function App() {
   useEffect(() => {
     if (!playing || !period || !meta.data) return
     const dateMax = meta.data.date_max
-    const step = period.days <= 7 ? 1 : 7
+    const step = period.days !== 'all' && period.days <= 7 ? 1 : 7
     const timer = setInterval(() => {
       setPeriod((current) => {
         const base = current ?? period
@@ -49,14 +50,15 @@ function App() {
   }, [playing, period, meta.data])
 
   const key = period ? periodKey(period) : ''
-  const counts = useAsync((signal) => (period ? fetchAreaCounts(period, signal) : Promise.reject(new Error('no period'))), key, FETCH_DELAY_MS)
+  const noPeriod = () => Promise.reject(new Error('no period'))
+  const counts = useAsync((signal) => (period && dateMin ? fetchAreaCounts(period, dateMin, signal) : noPeriod()), key, FETCH_DELAY_MS)
   const summary = useAsync(
-    (signal) => (period ? fetchSummary(period, selectedKey, signal) : Promise.reject(new Error('no period'))),
+    (signal) => (period && dateMin ? fetchSummary(period, dateMin, selectedKey, signal) : noPeriod()),
     `${key}|${selectedKey ?? ''}`,
     FETCH_DELAY_MS,
   )
   const timeline = useAsync(
-    (signal) => (period ? fetchTimeline(period, null, signal) : Promise.reject(new Error('no period'))),
+    (signal) => (period ? fetchTimeline(period, null, signal) : noPeriod()),
     period ? `${period.hourFrom}|${period.hourSpan}` : '',
     FETCH_DELAY_MS,
   )
@@ -158,6 +160,7 @@ function App() {
         <SidePanel
           summary={summary.data}
           loading={summary.loading || counts.loading}
+          dateMin={meta.data.date_min}
           period={period}
           metric={metric}
           domainMax={domainMax}

@@ -1,6 +1,6 @@
 import type { TimelinePoint } from '../client'
 import { addDays, daysBetween, formatShortDate } from '../lib/date'
-import { formatHourBand, HOUR_PRESETS, isFullDay, type Period, WINDOW_OPTIONS } from '../lib/period'
+import { formatHourBand, HOUR_PRESETS, isFullDay, type Period, WINDOW_OPTIONS, windowStart } from '../lib/period'
 import DateLabel from './DateLabel'
 import HourRangeSlider from './HourRangeSlider'
 
@@ -21,7 +21,7 @@ function Sparkline({ dateMin, dateMax, period, timeline }: Pick<Props, 'dateMin'
   const totalDays = Math.max(1, daysBetween(dateMin, dateMax))
   const x = (iso: string) => (Math.min(Math.max(daysBetween(dateMin, iso), 0), totalDays) / totalDays) * SPARK_WIDTH
   const max = Math.max(1, ...(timeline ?? []).map((p) => p.count))
-  const start = addDays(period.end, 1 - period.days)
+  const start = windowStart(period, dateMin)
   const windowX = x(start)
   const windowWidth = Math.max(2, x(addDays(period.end, 1)) - windowX)
   return (
@@ -56,7 +56,7 @@ function TimeControls({ dateMin, dateMax, period, onChange, timeline, playing, o
     const next = addDays(period.end, days)
     setEnd(next < dateMin ? dateMin : next > dateMax ? dateMax : next)
   }
-  const start = addDays(period.end, 1 - period.days)
+  const start = windowStart(period, dateMin)
 
   return (
     <div className="controls">
@@ -106,7 +106,7 @@ function TimeControls({ dateMin, dateMax, period, onChange, timeline, playing, o
         <div className="segmented" role="radiogroup" aria-label="集計期間">
           {WINDOW_OPTIONS.map((option) => (
             <button
-              key={option.days}
+              key={option.label}
               type="button"
               role="radio"
               aria-checked={period.days === option.days}

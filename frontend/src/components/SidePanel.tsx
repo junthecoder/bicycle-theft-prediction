@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import type { AreaProperties, Summary } from '../client'
 import { colorFor } from '../lib/color'
-import { WEEKDAY_LABELS } from '../lib/date'
+import { addDays, WEEKDAY_LABELS } from '../lib/date'
 import { isHourSelected, METRIC_LABELS, type Metric, type Period } from '../lib/period'
 import type { AreaValue } from '../Map'
 import { Bars, CategoryList } from './Charts'
@@ -11,6 +11,8 @@ type Tab = 'summary' | 'ranking' | 'search'
 interface Props {
   summary: Summary | undefined
   loading: boolean
+  /** First recorded day; a previous window that starts before it has nothing to compare against. */
+  dateMin: string
   period: Period
   metric: Metric
   domainMax: number
@@ -64,7 +66,12 @@ function peakHours(byHour: number[]): { from: number; count: number } | null {
 // Below this many thefts, percentages say nothing; ask for a longer window instead.
 const MIN_THEFTS_FOR_INSIGHTS = 10
 
-function Insights({ summary }: { summary: Summary }) {
+/** Whether the window of the same length just before this one lies entirely within the data. */
+function hasPreviousWindow(summary: Summary, dateMin: string): boolean {
+  return addDays(summary.window.start, -summary.window.days) >= dateMin
+}
+
+function Insights({ summary, comparable }: { summary: Summary; comparable: boolean }) {
   if (summary.total < MIN_THEFTS_FOR_INSIGHTS) {
     return (
       <div className="notice">
@@ -92,7 +99,7 @@ function Insights({ summary }: { summary: Summary }) {
   if (summary.total > 0) {
     items.push(`${percent(summary.bicycle_parking, summary.total)}は駐輪場での被害です。集合住宅や商業施設の駐輪場が主な現場です。`)
   }
-  if (summary.prev_total > 0 && summary.total >= summary.prev_total * 1.3 && summary.total >= 5) {
+  if (comparable && summary.prev_total > 0 && summary.total >= summary.prev_total * 1.3 && summary.total >= 5) {
     items.push('直前の同じ長さの期間より3割以上増えています。重点的な警戒が必要です。')
   }
   if (items.length === 0) return null
@@ -107,11 +114,13 @@ function Insights({ summary }: { summary: Summary }) {
 
 function SummaryTab({
   summary,
+  dateMin,
   period,
   onPickHour,
   onSelectArea,
-}: Pick<Props, 'summary' | 'period' | 'onPickHour' | 'onSelectArea'>) {
+}: Pick<Props, 'summary' | 'dateMin' | 'period' | 'onPickHour' | 'onSelectArea'>) {
   if (!summary) return <div className="notice">読み込み中…</div>
+  const comparable = hasPreviousWindow(summary, dateMin)
   const weekdayValues = WEEKDAYS_MON_FIRST.map((_, i) => summary.by_weekday[i])
   const weekdayLabels = WEEKDAYS_MON_FIRST.map((d) => WEEKDAY_LABELS[d])
   const lockKnown = summary.locked + summary.unlocked
@@ -143,9 +152,9 @@ function SummaryTab({
         <div className="kpi">
           <div className="label">前期間比</div>
           <div className="value" style={{ fontSize: 16 }}>
-            <Delta current={summary.total} previous={summary.prev_total} />
+            {comparable ? <Delta current={summary.total} previous={summary.prev_total} /> : '—'}
           </div>
-          <div className="label">前期間 {summary.prev_total}件</div>
+          <div className="label">{comparable ? `前期間 ${summary.prev_total}件` : '記録開始前のため比較なし'}</div>
         </div>
         <div className="kpi">
           <div className="label">千人あたり</div>
@@ -156,7 +165,7 @@ function SummaryTab({
         </div>
       </div>
 
-      <Insights summary={summary} />
+      <Insights summary={summary} comparable={comparable} />
 
       <div className="section">
         <h3>
