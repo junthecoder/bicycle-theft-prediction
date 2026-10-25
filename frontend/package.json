@@ -7,7 +7,9 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "generate_style": "generate_style src/basemap-style.json pmtiles:///tiles/fukuoka.pmtiles light ja",
+    "generate:api": "openapi-ts"
   },
   "dependencies": {
     "@holiday-jp/holiday_jp": "^2.5.2",
