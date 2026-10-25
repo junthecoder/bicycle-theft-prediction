@@ -38,6 +38,10 @@ RAW_COLUMNS = {
 }
 
 
+class InvalidWindow(ValueError):
+    """The requested current and comparison dates cannot be represented."""
+
+
 def area_lookup(areas: pl.DataFrame) -> dict[tuple[str, str], str]:
     # When two areas in a ward share a name (壱岐団地), send thefts to the more populous one.
     ordered = areas.sort(["population", "key_code"], descending=[True, False])
@@ -157,6 +161,10 @@ class Dataset:
         )
 
     def window(self, end: date, days: int, hour_from: int, hour_to: int) -> schemas.Window:
+        # Validate with integer ordinals before constructing timedelta, including the
+        # preceding comparison window used by every aggregate endpoint.
+        if days < 1 or days > end.toordinal() // 2:
+            raise InvalidWindow("current and preceding windows must fit within years 1 through 9999")
         return schemas.Window(start=end - timedelta(days=days - 1), end=end, days=days, hour_from=hour_from, hour_to=hour_to)
 
     def in_window(self, window: schemas.Window, shift_back: bool = False) -> pl.DataFrame:

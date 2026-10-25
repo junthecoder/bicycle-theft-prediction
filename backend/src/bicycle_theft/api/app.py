@@ -8,11 +8,11 @@ from typing import Annotated
 
 import uvicorn
 from fastapi import FastAPI, HTTPException, Query, Request
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, JSONResponse
 from fastapi.routing import APIRoute
 
 from bicycle_theft.api import schemas
-from bicycle_theft.api.data import Dataset
+from bicycle_theft.api.data import Dataset, InvalidWindow
 from bicycle_theft.areas import CITY_GEOJSON_PATH, GEOJSON_PATH
 from bicycle_theft.download_pmtiles import OUTPUT as PMTILES_PATH
 
@@ -35,9 +35,14 @@ app = FastAPI(
     generate_unique_id_function=operation_id,
 )
 
+
+@app.exception_handler(InvalidWindow)
+async def invalid_window_handler(request: Request, exc: InvalidWindow):
+    return JSONResponse(status_code=422, content={"detail": str(exc)})
+
 EndDate = Annotated[date, Query(description="Last day of the window (inclusive)")]
-# No upper bound: the frontend's 全期間 option asks for everything since the first date.
-Days = Annotated[int, Query(ge=1, description="Window length in days, ending on `end`")]
+# Bound only by Python's calendar; the frontend can still request all available data.
+Days = Annotated[int, Query(ge=1, le=date.max.toordinal() // 2, description="Window length in days; current and previous windows must fit within years 1–9999")]
 HourFrom = Annotated[int, Query(ge=0, le=23)]
 HourTo = Annotated[int, Query(ge=0, le=23, description="Inclusive; smaller than hour_from wraps past midnight")]
 KeyCode = Annotated[str | None, Query(description="町丁目 KEY_CODE; omit for the whole city")]
