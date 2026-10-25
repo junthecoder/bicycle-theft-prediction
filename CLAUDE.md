@@ -47,4 +47,5 @@ There is no test suite or Python linter configured yet.
 ## Conventions
 
 - Commits use Conventional Commits with a scope, e.g. `feat(frontend): ...`, `chore(dependencies): ...`.
+- Branches use Conventional Branch Naming: `feat/<scope>/<short-description>`, `fix/<scope>/<short-description>`, etc. Use dashes, not underscores.
 - Backend code uses polars for data work (pandas and geopandas are used only for shapefile handling). Comments explain *why* data quirks exist, so keep that style.
