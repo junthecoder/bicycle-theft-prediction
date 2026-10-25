@@ -27,6 +27,14 @@ export function Bars({ values, labels, labelClass, selected, onClick, title }: B
               title={title ? title(i) : `${labels[i]}: ${value}件`}
               onClick={onClick ? () => onClick(i) : undefined}
               role={onClick ? 'button' : undefined}
+              tabIndex={onClick ? 0 : undefined}
+              aria-label={onClick ? (title ? title(i) : `${labels[i]}: ${value}件`) : undefined}
+              onKeyDown={onClick ? (event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                  event.preventDefault()
+                  onClick(i)
+                }
+              } : undefined}
             />
           )
         })}
