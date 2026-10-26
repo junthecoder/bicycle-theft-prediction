@@ -1,5 +1,7 @@
 # Fukuoka Bicycle Thefts Prediction
 
+**Live demo: <https://chari.hakata.dev/>**
+
 ![Choropleth map of bicycle thefts per 町丁目 in central Fukuoka, with the date/time controls on the left and the detail panel for 博多区美野島二丁目 on the right](docs/images/hotspot-map.png)
 
 Interactive map of bicycle thefts in Fukuoka city by 町丁目 (census small area), with a
