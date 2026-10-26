@@ -1,0 +1,8 @@
+Fukuoka Bicycle Thefts Prediction
+Copyright 2026 Jun
+
+This product includes third-party software; see THIRD_PARTY_NOTICES.md.
+
+The Apache License covers the source code in this repository, not the data it processes.
+The theft data (Fukuoka Prefectural Police), census boundaries (e-Stat) and OpenStreetMap
+basemap keep their own terms; see the "Data sources and licenses" section of README.md.
