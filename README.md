@@ -52,6 +52,23 @@ cd frontend && pnpm generate_style
 
 ## Dataset
 
+### Theft data
+
+Bicycle theft records (自転車盗) from the Fukuoka Prefectural Police, published on the
+[福岡県オープンデータカタログサイト](https://data.bodik.jp/organization/400009) (creator: 福岡県警察本部生活安全部生活安全総務課).
+Save each CSV under `data/raw/bicycle-thefts/` with its original file name.
+
+| Year | Dataset | CSV |
+|---|---|---|
+| 2018 | [400009_hanzai](https://data.bodik.jp/dataset/400009_hanzai) | https://data.bodik.jp/dataset/763a6afc-942a-412f-adbf-70c13b96cc36/resource/6b57786a-9b2a-4a54-a252-0bc9233ebfcd/download/fukuoka_2018zitensyatou.csv |
+| 2019 | [400009_hanzai_r1](https://data.bodik.jp/dataset/400009_hanzai_r1) | https://data.bodik.jp/dataset/f3bbb8e9-4bf6-46e4-ac3f-a1bef559cae8/resource/2dd10155-171c-442b-88ac-f887435e8b8b/download/fukuoka_2019zitensyatou.csv |
+| 2020 | [400009_hanzair2](https://data.bodik.jp/dataset/400009_hanzair2) | https://data.bodik.jp/dataset/c6275753-94ca-40b5-98e2-e93cd3d7a9a2/resource/85ec1ab4-d2d2-4125-a8e1-68d8f9de0169/download/fukuoka_2020zitenshatou.csv |
+| 2021 | [400009_hanzair3](https://data.bodik.jp/dataset/400009_hanzair3) | https://data.bodik.jp/dataset/81eade23-8b71-4311-9978-5b48b66e332d/resource/347542ed-8c76-4f58-b724-c824895b6b91/download/fukuoka_2021zitensyatou.csv |
+| 2022 | [400009_hanzair4](https://data.bodik.jp/dataset/400009_hanzair4) | https://data.bodik.jp/dataset/9a43c945-71c4-4150-8ec4-676748c9b2d0/resource/780a31b4-5367-4468-875e-fb72af05410c/download/fukuoka_2022zitensyatou.csv |
+| 2023 | [400009_hanzair5](https://data.bodik.jp/dataset/400009_hanzair5) | https://data.bodik.jp/dataset/94ef6035-ccf3-4b68-97e7-1d0ade65f108/resource/3edc6b1e-a3e7-41be-909c-706eb013e2fc/download/fukuoka_2023zitensyatou.csv |
+| 2024 | [400009_hanzair6](https://data.bodik.jp/dataset/400009_hanzair6) | https://data.bodik.jp/dataset/c86326fe-655b-4eb0-a0fe-e29f163f31aa/resource/3357a675-7deb-4955-9840-13a57d4b7c9d/download/fukuoka_2024zitensyatou.csv |
+| 2025 | [400009_hanzair_r7](https://data.bodik.jp/dataset/400009_hanzair_r7) | https://data.bodik.jp/dataset/e3f82fc2-92d5-4355-a1ad-9ee2df23ab2b/resource/52a9a4dd-fb7b-4fb6-a7f2-63eac8f63b74/download/fukuoka_2025zitensyatou.csv |
+
 ### Boundary data
 
 #### Download page
@@ -83,6 +100,34 @@ https://www.e-stat.go.jp/gis/statmap-search/data?statsId=T001082&code=40&downloa
 ### PMTiles
 
 Run `uv run download-pmtiles` in `backend/` to download PMTiles for Fukuoka city.
+
+## Data sources and licenses
+
+The raw and processed datasets are not committed (`data/` is ignored); each source keeps its own
+terms. The map shows
+the credits in its attribution footer, and `frontend/public/credits.html` (served as `/credits.html`)
+lists every resource URL, the processing done here and the disclaimer.
+
+| Data | Terms | Credit |
+|---|---|---|
+| Theft CSVs, Fukuoka Prefectural Police | CC BY for 2018–2024 (the catalog's default is CC BY 2.1 JP), CC BY 4.0 for 2025; the police's own rules follow 政府標準利用規約 2.0, compatible with CC BY 4.0 | 出典：「自転車盗（CSVファイル）」（福岡県警察）（resource URL）, plus a separate statement that the data was processed (加工して作成) |
+| Census boundaries and `JINKO` population, e-Stat (総務省統計局) | [e-Stat 利用規約](https://www.e-stat.go.jp/terms-of-use), 政府標準利用規約 2.0, compatible with CC BY 4.0 | 出典：政府統計の総合窓口(e-Stat)（https://www.e-stat.go.jp/）, plus the processing statement |
+| Basemap tiles, OpenStreetMap via Protomaps | ODbL 1.0 (Protomaps distributes the build as a Produced Work) | © OpenStreetMap contributors, linked to https://www.openstreetmap.org/copyright |
+| Fonts and sprites from `protomaps.github.io/basemaps-assets` | SIL OFL 1.1 (Noto Sans), MIT (icons) | Loaded from the CDN, nothing to ship |
+
+The processed outputs in `data/processed/` and anything derived from them carry the same credits.
+This site is an unofficial project: it is not made, provided or endorsed by the Fukuoka Prefectural
+Police, Fukuoka Prefecture or the Statistics Bureau, and the counts, trends and prevention tips it
+shows are its own aggregation of the data above.
+
+## License
+
+The source code is licensed under the [Apache License 2.0](LICENSE); see [NOTICE](NOTICE). The
+licence does not cover the data described above. Files copied or generated from other projects
+(the Hey API client runtime and the Protomaps basemap style) keep their licences, listed in
+[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). `pnpm build` writes the licences of every bundled
+library to `frontend/dist/third-party-licenses.md`: what Vite collects from `node_modules`, the
+packages maplibre-gl bundles inside its own build, and `THIRD_PARTY_NOTICES.md`.
 
 ## Verification and audit
 
