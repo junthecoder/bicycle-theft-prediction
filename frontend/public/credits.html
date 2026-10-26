@@ -1,0 +1,310 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    <title>出典・ライセンス・免責事項 | 福岡市 自転車盗難 ホットスポット</title>
+    <style>
+      /* Same tokens as src/index.css so the page reads as part of the app. */
+      :root {
+        --bg: #f4f6f8;
+        --panel: #ffffff;
+        --text: #1b1f24;
+        --muted: #5f6b7a;
+        --border: #dde3ea;
+        --accent: #0b6e99;
+        --accent-bg: #e6f2f8;
+        --radius: 10px;
+
+        font: 15px/1.75 system-ui, -apple-system, 'Hiragino Sans', 'Noto Sans JP', sans-serif;
+        color: var(--text);
+        color-scheme: light;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        background: var(--bg);
+      }
+
+      main {
+        max-width: 860px;
+        margin: 0 auto;
+        padding: 32px 16px 64px;
+      }
+
+      h1 {
+        margin: 0 0 4px;
+        font-size: 24px;
+        line-height: 1.4;
+      }
+
+      h2 {
+        margin: 0 0 12px;
+        font-size: 18px;
+        line-height: 1.4;
+      }
+
+      h3 {
+        margin: 20px 0 8px;
+        font-size: 15px;
+      }
+
+      p,
+      ul {
+        margin: 0 0 10px;
+      }
+
+      ul {
+        padding-left: 1.3em;
+      }
+
+      a {
+        color: var(--accent);
+      }
+
+      .back {
+        display: inline-block;
+        margin-bottom: 20px;
+        font-size: 14px;
+      }
+
+      .lead {
+        color: var(--muted);
+        margin-bottom: 24px;
+      }
+
+      section {
+        margin-top: 16px;
+        padding: 20px 22px;
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+      }
+
+      .notice {
+        background: var(--accent-bg);
+        border-color: #b9d8e8;
+      }
+
+      .credit {
+        padding: 10px 14px;
+        border-left: 3px solid var(--accent);
+        background: #f7fafc;
+        font-size: 14px;
+      }
+
+      .table-wrap {
+        overflow-x: auto;
+        margin: 0 0 10px;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13.5px;
+        line-height: 1.6;
+      }
+
+      th,
+      td {
+        padding: 6px 8px;
+        border-bottom: 1px solid var(--border);
+        text-align: left;
+        vertical-align: top;
+      }
+
+      th {
+        color: var(--muted);
+        font-weight: 600;
+        white-space: nowrap;
+      }
+
+      td.nowrap {
+        white-space: nowrap;
+      }
+
+      small,
+      .muted {
+        color: var(--muted);
+      }
+
+      code {
+        font-size: 0.92em;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <a class="back" href="./">← 地図に戻る</a>
+      <h1>出典・ライセンス・免責事項</h1>
+      <p class="lead">福岡市 自転車盗難 ホットスポットが使用しているデータとソフトウェアの出典、ライセンス、加工の内容をまとめています。</p>
+
+      <section class="notice" id="disclaimer">
+        <h2>本サイトについて（免責事項）</h2>
+        <ul>
+          <li>本サイトは個人が作成した<strong>非公式</strong>のサイトです。福岡県警察、福岡県、総務省統計局その他の機関が作成・提供・推奨するものではありません。</li>
+          <li>地図や集計に表示している件数、人口千人あたりの件数、時間帯・場所などの傾向、防犯に関する説明文は、下記のデータをもとに本サイトが独自に集計・加工したもので、各機関の見解ではありません。</li>
+          <li>内容の正確性・完全性・最新性は保証しません。本サイトの利用により生じたいかなる損害についても、作成者は責任を負いません。</li>
+        </ul>
+      </section>
+
+      <section id="thefts">
+        <h2>自転車盗の発生データ</h2>
+        <p class="credit">
+          出典：「自転車盗（CSVファイル）」（福岡県警察）
+          （<a href="https://www.police.pref.fukuoka.jp/somu/koho/opendata.html" target="_blank" rel="noopener">福岡県警察 オープンデータ</a>、
+          <a href="https://data.bodik.jp/organization/400009" target="_blank" rel="noopener">福岡県オープンデータカタログサイト</a>）（2026年10月25日に取得）を加工して作成
+        </p>
+        <p>
+          作成者は福岡県警察本部生活安全部生活安全総務課、公開者は福岡県です。各年のリソースは次のとおりです。利用条件は
+          <a href="https://odcs.bodik.jp/400009/tos/" target="_blank" rel="noopener">福岡県オープンデータカタログサイト利用規約</a>
+          と福岡県警察のウェブサイト利用規約（政府標準利用規約 第2.0版準拠、CC BY 4.0 と互換）に従います。
+        </p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>年</th>
+                <th>データセット</th>
+                <th>リソース</th>
+                <th>ライセンス</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="nowrap">2018年（平成30年）</td>
+                <td><a href="https://data.bodik.jp/dataset/400009_hanzai" target="_blank" rel="noopener">福岡県　犯罪オープンデータ</a></td>
+                <td><a href="https://data.bodik.jp/dataset/763a6afc-942a-412f-adbf-70c13b96cc36/resource/6b57786a-9b2a-4a54-a252-0bc9233ebfcd/download/fukuoka_2018zitensyatou.csv" target="_blank" rel="noopener">自転車盗（CSVファイル）</a></td>
+                <td>CC BY ※</td>
+              </tr>
+              <tr>
+                <td class="nowrap">2019年（令和元年）</td>
+                <td><a href="https://data.bodik.jp/dataset/400009_hanzai_r1" target="_blank" rel="noopener">福岡県　令和元年　犯罪オープンデータ</a></td>
+                <td><a href="https://data.bodik.jp/dataset/f3bbb8e9-4bf6-46e4-ac3f-a1bef559cae8/resource/2dd10155-171c-442b-88ac-f887435e8b8b/download/fukuoka_2019zitensyatou.csv" target="_blank" rel="noopener">自転車盗（ＣＳＶファイル）</a></td>
+                <td>CC BY ※</td>
+              </tr>
+              <tr>
+                <td class="nowrap">2020年（令和2年）</td>
+                <td><a href="https://data.bodik.jp/dataset/400009_hanzair2" target="_blank" rel="noopener">福岡県　令和２年　犯罪オープンデータ</a></td>
+                <td><a href="https://data.bodik.jp/dataset/c6275753-94ca-40b5-98e2-e93cd3d7a9a2/resource/85ec1ab4-d2d2-4125-a8e1-68d8f9de0169/download/fukuoka_2020zitenshatou.csv" target="_blank" rel="noopener">自転車盗（CSVファイル）</a></td>
+                <td>CC BY ※</td>
+              </tr>
+              <tr>
+                <td class="nowrap">2021年（令和3年）</td>
+                <td><a href="https://data.bodik.jp/dataset/400009_hanzair3" target="_blank" rel="noopener">福岡県　令和３年　犯罪オープンデータ</a></td>
+                <td><a href="https://data.bodik.jp/dataset/81eade23-8b71-4311-9978-5b48b66e332d/resource/347542ed-8c76-4f58-b724-c824895b6b91/download/fukuoka_2021zitensyatou.csv" target="_blank" rel="noopener">自転車盗（csvファイル）</a></td>
+                <td>CC BY ※</td>
+              </tr>
+              <tr>
+                <td class="nowrap">2022年（令和4年）</td>
+                <td><a href="https://data.bodik.jp/dataset/400009_hanzair4" target="_blank" rel="noopener">福岡県　令和４年　犯罪オープンデータ</a></td>
+                <td><a href="https://data.bodik.jp/dataset/9a43c945-71c4-4150-8ec4-676748c9b2d0/resource/780a31b4-5367-4468-875e-fb72af05410c/download/fukuoka_2022zitensyatou.csv" target="_blank" rel="noopener">自転車盗（csvファイル）</a></td>
+                <td>CC BY ※</td>
+              </tr>
+              <tr>
+                <td class="nowrap">2023年（令和5年）</td>
+                <td><a href="https://data.bodik.jp/dataset/400009_hanzair5" target="_blank" rel="noopener">福岡県　令和５年　犯罪オープンデータ</a></td>
+                <td><a href="https://data.bodik.jp/dataset/94ef6035-ccf3-4b68-97e7-1d0ade65f108/resource/3edc6b1e-a3e7-41be-909c-706eb013e2fc/download/fukuoka_2023zitensyatou.csv" target="_blank" rel="noopener">自転車盗（CSVファイル）</a></td>
+                <td>CC BY ※</td>
+              </tr>
+              <tr>
+                <td class="nowrap">2024年（令和6年）</td>
+                <td><a href="https://data.bodik.jp/dataset/400009_hanzair6" target="_blank" rel="noopener">福岡県　令和６年　犯罪オープンデータ</a></td>
+                <td><a href="https://data.bodik.jp/dataset/c86326fe-655b-4eb0-a0fe-e29f163f31aa/resource/3357a675-7deb-4955-9840-13a57d4b7c9d/download/fukuoka_2024zitensyatou.csv" target="_blank" rel="noopener">自転車盗（CSVファイル）</a></td>
+                <td>CC BY ※</td>
+              </tr>
+              <tr>
+                <td class="nowrap">2025年（令和7年）</td>
+                <td><a href="https://data.bodik.jp/dataset/400009_hanzair_r7" target="_blank" rel="noopener">福岡県　令和７年　犯罪オープンデータ</a></td>
+                <td><a href="https://data.bodik.jp/dataset/e3f82fc2-92d5-4355-a1ad-9ee2df23ab2b/resource/52a9a4dd-fb7b-4fb6-a7f2-63eac8f63b74/download/fukuoka_2025zitensyatou.csv" target="_blank" rel="noopener">自転車盗（CSVファイル）</a></td>
+                <td><a href="https://creativecommons.org/licenses/by/4.0/deed.ja" target="_blank" rel="noopener">CC BY 4.0</a></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p><small>※ カタログ上の表記は版の指定のない「Creative Commons Attribution」で、同サイトの利用規約により <a href="https://creativecommons.org/licenses/by/2.1/jp/" target="_blank" rel="noopener">CC BY 2.1 日本</a> が適用されます。</small></p>
+
+        <h3>本サイトでの加工</h3>
+        <ul>
+          <li>福岡県全域のデータから福岡市（市区町村コード 4013x）の発生分を抽出しています。</li>
+          <li>発生日（始期）が不明な事件と、2018年1月1日より前に発生した事件（2018年のファイルに含まれる過去の発生分）は集計に含めていません。</li>
+          <li>町丁目名の表記（異体字、漢数字の丁目など）を正規化して令和2年国勢調査の町丁・字に対応付けています。国勢調査より後にできた丁目は親の町に、「大字」が省かれた地名は国勢調査の「大字○○」に対応付けています。この対応付けは推定を含みます。</li>
+          <li>選択した期間・時間帯ごとに件数を集計し、国勢調査の人口から人口千人あたりの件数を計算しています（人口100人未満の地域は千人あたりの件数を算出しません）。</li>
+          <li>発生場所、施錠の有無、被害者の年齢などの内訳と、それをもとにした説明文は本サイトが作成したものです。</li>
+        </ul>
+
+        <h3>データの注意点</h3>
+        <ul>
+          <li>発生日時に幅がある事件は、その始期の日付・時刻で記録されています。発生時刻が不明の事件は「終日」を選んだときだけ数えています。</li>
+          <li>発生地が不明な事件やプライバシーへの配慮が必要な事件は、町丁目が空欄で公開されています。町丁目に対応付けられなかった件数は地図の凡例に「地図に載せられない件数」として表示しています。</li>
+          <li>濃い灰色で塗った町丁目（凡例の「記録対象外の町丁目」）は、全期間を通じて記録が1件もない地域です。</li>
+        </ul>
+      </section>
+
+      <section id="census">
+        <h2>町丁目の境界と人口</h2>
+        <p class="credit">
+          出典：<a href="https://www.e-stat.go.jp/" target="_blank" rel="noopener">政府統計の総合窓口(e-Stat)</a>（https://www.e-stat.go.jp/）
+          「令和2年国勢調査 小地域（町丁・字等別）境界データ」（総務省統計局）を加工して作成
+        </p>
+        <p>
+          福岡市の7区（東区・博多区・中央区・南区・西区・城南区・早良区）のShapefile（世界測地系 緯度経度）を
+          <a href="https://www.e-stat.go.jp/gis/statmap-search?page=1&amp;type=2&amp;aggregateUnitForBoundary=A&amp;toukeiCode=00200521&amp;toukeiYear=2020&amp;serveyId=A002005212020&amp;prefCode=40&amp;coordsys=1&amp;format=shape&amp;datum=2011" target="_blank" rel="noopener">境界データのダウンロードページ</a>
+          から取得しています。人口は同データの人口（<code>JINKO</code>）属性です。利用条件は
+          <a href="https://www.e-stat.go.jp/terms-of-use" target="_blank" rel="noopener">e-Stat 利用規約</a>（政府標準利用規約 第2.0版準拠、CC BY 4.0 と互換）に従います。
+        </p>
+        <h3>本サイトでの加工</h3>
+        <ul>
+          <li>水面調査区を除き、同じ町丁・字コード（KEY_CODE）の区域を1つに結合しています。</li>
+          <li>表示を軽くするため境界の形状を簡略化しています。市の外周線は水面を含む全区域を結合して作成しています。</li>
+          <li>境界データは統計のために作られたもので、住居表示や行政上の区域とは一致しない場合があります。</li>
+        </ul>
+      </section>
+
+      <section id="basemap">
+        <h2>背景地図</h2>
+        <ul>
+          <li>
+            地図データ：<a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">© OpenStreetMap contributors</a>
+            （<a href="https://opendatacommons.org/licenses/odbl/1-0/" target="_blank" rel="noopener">ODbL 1.0</a>）。2026年10月25日時点のデータです。
+          </li>
+          <li>
+            タイル：<a href="https://protomaps.com/" target="_blank" rel="noopener">Protomaps</a> のベースマップ（v4.15.2）から福岡市周辺を切り出したもので、OpenStreetMap の
+            Produced Work として ODbL の下で配布されています。
+          </li>
+          <li>地図のスタイル：<a href="https://github.com/protomaps/basemaps" target="_blank" rel="noopener">@protomaps/basemaps</a>（BSD-3-Clause、© Protomaps LLC, Kelso Cartography）。デザインは CC0 です。</li>
+          <li>
+            フォントとアイコン：<a href="https://github.com/protomaps/basemaps-assets" target="_blank" rel="noopener">protomaps/basemaps-assets</a>
+            から読み込んでいます。フォントは Noto Sans（SIL Open Font License 1.1）、アイコンは Mapzen の tangrams/icons に由来します（MIT）。
+          </li>
+        </ul>
+      </section>
+
+      <section id="software">
+        <h2>ソフトウェア</h2>
+        <ul>
+          <li>
+            本サイトのソースコード：<a href="https://github.com/junthecoder/bicycle-theft-prediction" target="_blank" rel="noopener">github.com/junthecoder/bicycle-theft-prediction</a>
+            （<a href="https://www.apache.org/licenses/LICENSE-2.0" target="_blank" rel="noopener">Apache License 2.0</a>）。データはこのライセンスの対象外で、上記の各条件に従います。
+          </li>
+          <li>
+            地図の描画：<a href="https://maplibre.org/" target="_blank" rel="noopener">MapLibre GL JS</a>（BSD-3-Clause）、
+            <a href="https://visgl.github.io/react-map-gl/" target="_blank" rel="noopener">react-map-gl</a>（MIT）、
+            <a href="https://github.com/protomaps/PMTiles" target="_blank" rel="noopener">PMTiles</a>（BSD-3-Clause）
+          </li>
+          <li>祝日の判定：<a href="https://github.com/holiday-jp/holiday_jp-js" target="_blank" rel="noopener">@holiday-jp/holiday_jp</a>（MIT）</li>
+          <li>画面：<a href="https://react.dev/" target="_blank" rel="noopener">React</a>（MIT）、API クライアント：<a href="https://heyapi.dev/" target="_blank" rel="noopener">Hey API</a> が生成するランタイム（MIT）</li>
+          <li>配信しているプログラムに含まれるライブラリのライセンス全文：<a href="third-party-licenses.md" target="_blank" rel="noopener">third-party-licenses.md</a> <small>（ビルドした公開版で利用できます）</small></li>
+        </ul>
+      </section>
+
+      <p class="muted" style="margin-top: 20px"><small>このページの内容は 2026年10月26日時点のものです。</small></p>
+    </main>
+  </body>
+</html>

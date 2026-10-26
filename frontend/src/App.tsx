@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { type CSSProperties, useEffect, useMemo, useState } from 'react'
 import './App.css'
 import Legend from './components/Legend'
 import SidePanel from './components/SidePanel'
@@ -36,7 +36,8 @@ function App() {
   const [playing, setPlaying] = useState(false)
   const [controlsPanel, setControlsPanel] = useState<HTMLDivElement | null>(null)
   const [sidePanel, setSidePanel] = useState<HTMLDivElement | null>(null)
-  const insets = useOverlayInsets(controlsPanel, sidePanel)
+  const [attribution, setAttribution] = useState<HTMLElement | null>(null)
+  const insets = useOverlayInsets(controlsPanel, sidePanel, attribution)
   const unrecordedAreas = useMemo(() => new Set(meta.data?.unrecorded_areas ?? []), [meta.data])
 
   // Playback: step the end date forward until the data runs out.
@@ -114,7 +115,8 @@ function App() {
   }
 
   return (
-    <div className="app">
+    // App.css lifts the panels above the attribution footer by its measured height.
+    <div className="app" style={{ '--attribution-height': `${insets.footer}px` } as CSSProperties}>
       <div className="map-container">
         <MapView
           areas={areas.data}
@@ -128,6 +130,7 @@ function App() {
           selectedKey={selectedKey}
           onSelect={(keyCode) => selectArea(keyCode, false)}
           focus={focus}
+          onAttributionElement={setAttribution}
         />
       </div>
 

@@ -27,14 +27,14 @@
 }
 
 .overlay.bottom-left {
-  bottom: 28px;
+  bottom: calc(var(--attribution-height, 0px) + 12px);
   left: 12px;
 }
 
 .overlay.right {
   top: 12px;
   right: 12px;
-  bottom: 12px;
+  bottom: calc(var(--attribution-height, 0px) + 12px);
   width: 360px;
   max-width: calc(100vw - 24px);
   display: flex;
@@ -749,9 +749,54 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* Keep MapLibre's own controls clear of the side panel */
+/* Keep MapLibre's own controls clear of the side panel and above the attribution footer */
 .app .maplibregl-ctrl-bottom-right {
   right: 372px;
+  bottom: var(--attribution-height, 0px);
+}
+
+/* Attribution footer: MapLibre's control stretched along the bottom edge. App.css loads before
+   maplibre-gl.css, so every rule here is prefixed with .app to win on specificity. The panels sit
+   above it, and it is drawn over them so that a short window can never hide the credits. */
+.app .maplibregl-ctrl-bottom-left {
+  left: 0;
+  right: 0;
+  z-index: 3;
+}
+
+.app .maplibregl-ctrl-bottom-left .maplibregl-ctrl-attrib {
+  float: none;
+  width: 100%;
+  margin: 0;
+  padding: 3px 12px;
+  border-top: 1px solid var(--border);
+  border-radius: 0;
+  background: rgba(255, 255, 255, 0.92);
+  color: #374151;
+  font: 11px/17px system-ui, -apple-system, 'Hiragino Sans', 'Noto Sans JP', sans-serif;
+}
+
+.app .maplibregl-ctrl-attrib a {
+  color: inherit;
+}
+
+.app .maplibregl-ctrl-attrib a.credits {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.app .maplibregl-ctrl-attrib .nowrap {
+  white-space: nowrap;
+}
+
+.app .maplibregl-ctrl-attrib .unofficial {
+  display: inline-block;
+  padding: 0 5px;
+  border-radius: 4px;
+  background: #374151;
+  color: #fff;
+  font-size: 10px;
+  line-height: 15px;
 }
 
 /* Map popup */
@@ -837,11 +882,25 @@
     right: 12px;
   }
 
+  /* The sheet sits on the attribution footer; its top edge stays where it was without one. */
   .overlay.right {
     top: auto;
     left: 12px;
+    bottom: calc(var(--attribution-height, 0px) + 8px);
     width: auto;
-    max-height: 42vh;
+    max-height: calc(42vh - var(--attribution-height, 0px) + 4px);
+  }
+
+  /* Between the controls panel and the sheet there is no room left for the zoom buttons and the
+     scale bar, which used to end up off-screen; pinch zoom covers it. */
+  .app .maplibregl-ctrl-bottom-right {
+    display: none;
+  }
+
+  .app .maplibregl-ctrl-bottom-left .maplibregl-ctrl-attrib {
+    padding: 4px 10px;
+    font-size: 10.5px;
+    line-height: 15px;
   }
 
   .overlay.bottom-left {

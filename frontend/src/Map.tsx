@@ -7,6 +7,7 @@ import maplibreWorkerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&ur
 import { Protocol } from 'pmtiles'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import MapGL, {
+  AttributionControl,
   Layer,
   NavigationControl,
   Popup,
@@ -19,6 +20,7 @@ import MapGL, {
 import baseStyle from './basemap-style.json'
 import type { AreaFeatureCollection, AreaProperties, CityOutlineFeatureCollection } from './client'
 import type { OverlayInsets } from './hooks/useOverlayInsets'
+import { attributionHtml, BASEMAP_ATTRIBUTION } from './lib/attribution'
 import { fillColorExpression } from './lib/color'
 import { focusOptions, formatValue } from './lib/mapDisplay'
 import { METRIC_LABELS, type Metric } from './lib/period'
@@ -30,7 +32,11 @@ addProtocol('pmtiles', new Protocol().tile)
 
 type Bounds = [number, number, number, number]
 
-const style = baseStyle as unknown as StyleSpecification
+const style = {
+  ...baseStyle,
+  sources: { ...baseStyle.sources, protomaps: { ...baseStyle.sources.protomaps, attribution: BASEMAP_ATTRIBUTION } },
+} as unknown as StyleSpecification
+const ATTRIBUTION = attributionHtml(import.meta.env.BASE_URL)
 // Draw the choropleth under the basemap's text so place names stay legible.
 const FIRST_SYMBOL_LAYER = style.layers.find((layer) => layer.type === 'symbol')?.id
 const AREAS_SOURCE = 'areas'
@@ -78,6 +84,8 @@ interface Props {
   onSelect: (keyCode: string | null) => void
   /** Bump `nonce` to zoom to the area again even if `keyCode` is unchanged. */
   focus: { keyCode: string; nonce: number } | null
+  /** Receives the attribution control's element once the map has loaded, for layout measuring. */
+  onAttributionElement: (element: HTMLElement | null) => void
 }
 
 interface Hover {
@@ -120,6 +128,7 @@ function MapView({
   selectedKey,
   onSelect,
   focus,
+  onAttributionElement,
 }: Props) {
   const mapRef = useRef<MapRef>(null)
   const [sourceReady, setSourceReady] = useState(false)
@@ -217,6 +226,11 @@ function MapView({
     onSelect(keyCode === selectedKey ? null : keyCode)
   }
 
+  const onLoad = () => {
+    constrainToCity()
+    onAttributionElement(mapRef.current?.getContainer().querySelector<HTMLElement>('.maplibregl-ctrl-attrib') ?? null)
+  }
+
   const onSourceData = (event: MapSourceDataEvent) => {
     if (!sourceReady && event.sourceId === AREAS_SOURCE && event.isSourceLoaded) setSourceReady(true)
   }
@@ -232,7 +246,8 @@ function MapView({
       padding={padding}
       minZoom={9.5}
       maxZoom={17}
-      onLoad={constrainToCity}
+      attributionControl={false}
+      onLoad={onLoad}
       onZoom={constrainToCity}
       style={{ width: '100%', height: '100%' }}
       interactiveLayerIds={['areas-fill']}
@@ -342,6 +357,9 @@ function MapView({
           </div>
         </Popup>
       )}
+      {/* Never compact: the credits must stay readable rather than fold into an (i) button on the
+          first drag. App.css turns the control into a full-width footer bar. */}
+      <AttributionControl position="bottom-left" compact={false} customAttribution={ATTRIBUTION} />
       <NavigationControl position="bottom-right" showCompass={false} />
       <ScaleControl position="bottom-right" />
     </MapGL>
